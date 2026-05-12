@@ -206,6 +206,7 @@
   .summary-card.output-card::before { background: var(--pink); }
   .summary-card.total::before { background: linear-gradient(90deg, var(--green), var(--blue)); }
   .summary-card.prompts::before { background: var(--blue); }
+  .summary-card.trend::before { background: linear-gradient(90deg, var(--orange), var(--pink)); }
   .summary-card .slabel { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); margin-bottom: 8px; }
   .summary-card .value { font-size: 1.5rem; font-weight: 700; }
   .summary-card .sub { font-size: 0.8rem; color: var(--text-dim); margin-top: 4px; }
@@ -361,6 +362,9 @@
     </div>
     <div class="summary-card prompts">
       <div class="slabel">Total Prompts</div><div class="value" id="sumPrompts">—</div><div class="sub" id="sumDays">—</div>
+    </div>
+    <div class="summary-card trend">
+      <div class="slabel">Trend</div><div class="value" id="sumTrend">—</div><div class="sub">—</div>
     </div>
     <div class="summary-card total">
       <div class="slabel">Total Cost</div><div class="value" id="sumTotalCost">$0.00</div><div class="sub" id="sumTotalTokens">—</div>
@@ -722,6 +726,17 @@ function renderSummary() {
   document.getElementById('sumOutputCost').textContent = fmtCost(totals.output);
   document.getElementById('sumPrompts').textContent = fmtNum(tp);
   document.getElementById('sumDays').textContent = dataFiltered.length + ' days';
+  // Trend: compare last day vs previous day
+  if (dataFiltered.length >= 2) {
+    const last = dataFiltered[dataFiltered.length-1], prev = dataFiltered[dataFiltered.length-2];
+    const lt = sumArr(last.cached)+sumArr(last.input)+sumArr(last.output);
+    const pt = sumArr(prev.cached)+sumArr(prev.input)+sumArr(prev.output);
+    const pct = pt ? Math.round((lt - pt) / pt * 100) : 0;
+    const arrow = pct >= 0 ? '▲' : '▼';
+    const color = pct >= 0 ? 'var(--pink)' : 'var(--green)';
+    document.getElementById('sumTrend').innerHTML = `<span style="color:${color}">${arrow} ${Math.abs(pct)}%</span>`;
+    document.getElementById('sumTrend').nextElementSibling.textContent = 'day-over-day';
+  }
   document.getElementById('sumTotalCost').textContent = fmtCost(totals.total);
   document.getElementById('sumTotalTokens').textContent = fmtNum(gt) + ' tokens';
 }
