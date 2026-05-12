@@ -124,8 +124,8 @@
     </div>
   </div>
 
-  <div style="text-align:center;padding:12px;font-size:0.75rem;color:var(--text-dim);">
-    Looking for the <a href="dashboard.html" style="color:var(--accent);text-decoration:none;">full dashboard</a> with charts, model search, and date range filter?
+  <div style="text-align:center;padding:20px 12px;margin-top:8px;border-top:1px solid var(--surface2);font-size:0.8rem;color:var(--text-dim);">
+    Want charts, model search, and date range filter? Try the <a href="dashboard.html" style="color:var(--accent);">full dashboard</a> →
   </div>
 
 </div>
@@ -208,9 +208,8 @@ window.addEventListener('resize', adaptTable);
 
 function renderTable() {
   const m = selectedModel || TOP_MODELS[0];
-  const useData = displayDays <= tokenData.length ? tokenData.slice(0, displayDays) : tokenData;
   let tc=0,ti=0,to=0,tp=0,html='';
-  useData.forEach(d => {
+  tokenData.forEach(d => {
     const c=calcCost(m,d), p=sumArr(d.prompts);
     tc+=sumArr(d.cached); ti+=sumArr(d.input); to+=sumArr(d.output); tp+=p;
     html+=`<tr><td class="date-cell" data-label="Date">${d.date}</td><td class="num" data-label="Prompts">${p}</td><td class="num" data-label="Cached">${fmtNum(sumArr(d.cached))}</td><td class="num" data-label="Input">${fmtNum(sumArr(d.input))}</td><td class="num" data-label="Output">${fmtNum(sumArr(d.output))}</td><td class="cost-val" data-label="Cost">${fmtCost(c.cached+c.input+c.output)}</td></tr>`;
