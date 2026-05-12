@@ -1,0 +1,9 @@
+[
+  {"date":"Mar 21","prompts":[120],"cached":[14000000],"input":[250000],"output":[80000]},
+  {"date":"Mar 22","prompts":[95,40],"cached":[18000000,9000000],"input":[310000,150000],"output":[95000,55000]},
+  {"date":"Mar 23","prompts":[200],"cached":[22000000],"input":[400000],"output":[120000]},
+  {"date":"Mar 24","prompts":[150],"cached":[16000000],"input":[280000],"output":[90000]},
+  {"date":"Mar 25","prompts":[80,110],"cached":[10000000,20000000],"input":[180000,350000],"output":[60000,110000]},
+  {"date":"Mar 26","prompts":[170],"cached":[25000000],"input":[420000],"output":[130000]},
+  {"date":"Mar 27","prompts":[60,45],"cached":[8000000,12000000],"input":[140000,200000],"output":[50000,70000]}
+]
