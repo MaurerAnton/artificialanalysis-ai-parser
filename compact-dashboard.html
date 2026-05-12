@@ -48,6 +48,13 @@
   .sum-row td { background: var(--surface2); font-weight: 700; border-top: 2px solid var(--accent); }
   .table-wrap { overflow-x: auto; }
 
+  .days-btn {
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text-dim);
+    padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; cursor: pointer; transition: all 0.2s;
+  }
+  .days-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .days-btn:hover:not(.active) { border-color: var(--accent); color: var(--text); }
+
   /* vertical card mode — applied dynamically by JS when table overflows */
   .table-wrap.vertical table, .table-wrap.vertical thead, .table-wrap.vertical tbody,
   .table-wrap.vertical th, .table-wrap.vertical td, .table-wrap.vertical tr { display: block; }
@@ -97,7 +104,14 @@
   </header>
 
   <div class="section">
-    <h2>🤖 How much would I pay providers for my tokens? <span class="status" id="status"></span></h2>
+    <h2>🤖 What would I pay providers if I used their capacity for my needs?
+      <span style="font-size:0.65rem;font-weight:400;color:var(--text-dim);margin-left:8px;display:inline-flex;gap:4px;">
+        <button class="days-btn active" onclick="setDays(1)">1d</button>
+        <button class="days-btn" onclick="setDays(7)">7d</button>
+        <button class="days-btn" onclick="setDays(30)">30d</button>
+      </span>
+      <span class="status" id="status"></span>
+    </h2>
     <div class="model-grid" id="modelGrid"></div>
   </div>
 
@@ -115,7 +129,7 @@
 <script>
 const PATHS_URL = 'paths.json';
 const PATHS_FALLBACK = 'example-paths.json';
-let tokenData = [], selectedModel = null;
+let tokenData = [], selectedModel = null, displayDays = 1;
 
 const TOP_MODELS = [
   { name:'GPT-5.5 (xhigh)', creator:'OpenAI', priceInput:5.00, priceOutput:30.00, priceCached:0.50, iq:60.24, speed:57 },
@@ -143,14 +157,19 @@ function calcCost(model, day) {
   return { cached:c/1e6*pc, input:i/1e6*model.priceInput, output:o/1e6*model.priceOutput };
 }
 
-function totalCost(model) {
+function totalCost(model, days) {
+  days = days || displayDays;
+  const avail = tokenData.length;
+  const useData = days <= avail ? tokenData.slice(0, days) : tokenData;
   let tc=0,ti=0,to=0;
-  tokenData.forEach(d => { const c=calcCost(model,d); tc+=c.cached; ti+=c.input; to+=c.output; });
-  return tc+ti+to;
+  useData.forEach(d => { const c=calcCost(model,d); tc+=c.cached; ti+=c.input; to+=c.output; });
+  const subtotal = tc+ti+to;
+  return days > avail ? subtotal * (days / avail) : subtotal;
 }
 
 function renderModels() {
   const grid = document.getElementById('modelGrid');
+  const label = displayDays > tokenData.length ? ` (${tokenData.length}d × ${(displayDays/tokenData.length).toFixed(1)})` : '';
   grid.innerHTML = TOP_MODELS.map((m,i) => {
     const cost = totalCost(m);
     const sel = selectedModel && selectedModel.name === m.name;
@@ -162,7 +181,7 @@ function renderModels() {
       <div class="mc-row"><span class="lbl">Output $/1M</span><span class="val">$${m.priceOutput.toFixed(2)}</span></div>
       <div class="mc-row"><span class="lbl">Cached $/1M</span><span class="val">$${(m.priceCached||m.priceInput*0.08).toFixed(2)}</span></div>
       <div class="mc-row"><span class="lbl">Speed</span><span class="val" style="color:var(--orange)">${m.speed} tok/s</span></div>
-      <div class="mc-cost"><div class="big">${fmtCost(cost)}</div><div class="sub">total for ${tokenData.length} days</div></div>
+      <div class="mc-cost"><div class="big">${fmtCost(cost)}</div><div class="sub">for ${displayDays} day${displayDays>1?'s':''}${label}</div></div>
     </div>`;
   }).join('');
 }
@@ -185,8 +204,9 @@ window.addEventListener('resize', adaptTable);
 
 function renderTable() {
   const m = selectedModel || TOP_MODELS[0];
+  const useData = displayDays <= tokenData.length ? tokenData.slice(0, displayDays) : tokenData;
   let tc=0,ti=0,to=0,tp=0,html='';
-  tokenData.forEach(d => {
+  useData.forEach(d => {
     const c=calcCost(m,d), p=sumArr(d.prompts);
     tc+=sumArr(d.cached); ti+=sumArr(d.input); to+=sumArr(d.output); tp+=p;
     html+=`<tr><td class="date-cell" data-label="Date">${d.date}</td><td class="num" data-label="Prompts">${p}</td><td class="num" data-label="Cached">${fmtNum(sumArr(d.cached))}</td><td class="num" data-label="Input">${fmtNum(sumArr(d.input))}</td><td class="num" data-label="Output">${fmtNum(sumArr(d.output))}</td><td class="cost-val" data-label="Cost">${fmtCost(c.cached+c.input+c.output)}</td></tr>`;
@@ -195,6 +215,13 @@ function renderTable() {
   html+=`<tr class="sum-row"><td data-label="Date">TOTAL</td><td class="num" data-label="Prompts">${tp}</td><td class="num" data-label="Cached">${fmtNum(tc)}</td><td class="num" data-label="Input">${fmtNum(ti)}</td><td class="num" data-label="Output">${fmtNum(to)}</td><td class="cost-val" data-label="Cost">${fmtCost(gt)}</td></tr>`;
   document.getElementById('tableBody').innerHTML = html;
   adaptTable();
+}
+
+function setDays(d) {
+  displayDays = d;
+  document.querySelectorAll('.days-btn').forEach(b => b.classList.toggle('active', +b.textContent.replace('d','') === d));
+  renderModels();
+  renderTable();
 }
 
 function setStatus(type, msg) {
@@ -215,7 +242,7 @@ async function init() {
     tokenData = await dataResp.json();
     if (!Array.isArray(tokenData)) throw new Error('Expected array');
     document.getElementById('dateRange').textContent = tokenData[0].date + ' – ' + tokenData[tokenData.length-1].date;
-    setStatus('ok', tokenData.length + ' days');
+    setStatus('ok', '');
     selectedModel = TOP_MODELS[0];
     renderModels();
     renderTable();
