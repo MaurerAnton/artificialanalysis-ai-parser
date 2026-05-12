@@ -51,7 +51,33 @@
   @media (max-width: 600px) {
     body { padding: 8px; }
     .model-grid { grid-template-columns: 1fr 1fr; }
-    table { font-size: 0.72rem; }
+    table, thead, tbody, th, td, tr { display: block; }
+    thead tr { display: none; }
+    tbody tr {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      padding: 10px 12px;
+    }
+    tbody tr:hover { background: var(--surface2); }
+    tbody td {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 0;
+      border: none;
+      font-size: 0.78rem;
+    }
+    tbody td::before {
+      content: attr(data-label);
+      font-weight: 600;
+      color: var(--text-dim);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .sum-row td { border-top: 1px solid var(--accent); padding-top: 8px; margin-top: 4px; }
   }
 </style>
 </head>
@@ -64,7 +90,7 @@
   </header>
 
   <div class="section">
-    <h2>🤖 Models <span class="status" id="status"></span></h2>
+    <h2>🤖 How much would I pay providers for my tokens? <span class="status" id="status"></span></h2>
     <div class="model-grid" id="modelGrid"></div>
   </div>
 
@@ -147,10 +173,10 @@ function renderTable() {
   tokenData.forEach(d => {
     const c=calcCost(m,d), p=sumArr(d.prompts);
     tc+=sumArr(d.cached); ti+=sumArr(d.input); to+=sumArr(d.output); tp+=p;
-    html+=`<tr><td class="date-cell">${d.date}</td><td class="num">${p}</td><td class="num">${fmtNum(sumArr(d.cached))}</td><td class="num">${fmtNum(sumArr(d.input))}</td><td class="num">${fmtNum(sumArr(d.output))}</td><td class="cost-val">${fmtCost(c.cached+c.input+c.output)}</td></tr>`;
+    html+=`<tr><td class="date-cell" data-label="Date">${d.date}</td><td class="num" data-label="Prompts">${p}</td><td class="num" data-label="Cached">${fmtNum(sumArr(d.cached))}</td><td class="num" data-label="Input">${fmtNum(sumArr(d.input))}</td><td class="num" data-label="Output">${fmtNum(sumArr(d.output))}</td><td class="cost-val" data-label="Cost">${fmtCost(c.cached+c.input+c.output)}</td></tr>`;
   });
   const gt = totalCost(m);
-  html+=`<tr class="sum-row"><td>TOTAL</td><td class="num">${tp}</td><td class="num">${fmtNum(tc)}</td><td class="num">${fmtNum(ti)}</td><td class="num">${fmtNum(to)}</td><td class="cost-val">${fmtCost(gt)}</td></tr>`;
+  html+=`<tr class="sum-row"><td data-label="Date">TOTAL</td><td class="num" data-label="Prompts">${tp}</td><td class="num" data-label="Cached">${fmtNum(tc)}</td><td class="num" data-label="Input">${fmtNum(ti)}</td><td class="num" data-label="Output">${fmtNum(to)}</td><td class="cost-val" data-label="Cost">${fmtCost(gt)}</td></tr>`;
   document.getElementById('tableBody').innerHTML = html;
 }
 
