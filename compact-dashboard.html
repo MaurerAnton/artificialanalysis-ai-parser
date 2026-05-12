@@ -110,8 +110,8 @@
     </h2>
     <div id="daySelector" class="hidden-init" style="margin-bottom:14px;font-size:0.8rem;color:var(--text-dim);align-items:center;gap:8px;">
       Select days:
-      <button class="days-btn active" onclick="setDays(1)">1d</button>
-      <button class="days-btn" onclick="setDays(7)">7d</button>
+      <button class="days-btn" onclick="setDays(1)">1d</button>
+      <button class="days-btn active" onclick="setDays(7)">7d</button>
       <button class="days-btn" onclick="setDays(30)">30d</button>
     </div>
     <div class="model-grid" id="modelGrid"></div>
@@ -139,7 +139,7 @@
 <script>
 const PATHS_URL = 'paths.json';
 const PATHS_FALLBACK = 'example-paths.json';
-let tokenData = [], selectedModel = null, displayDays = 1;
+let tokenData = [], selectedModel = null, displayDays = 7;
 
 const TOP_MODELS = [
   { name:'GPT-5.5 (xhigh)', creator:'OpenAI', priceInput:5.00, priceOutput:30.00, priceCached:0.50, iq:60.24, speed:57 },
@@ -179,9 +179,9 @@ function totalCost(model, days) {
 
 function renderModels() {
   const grid = document.getElementById('modelGrid');
-  const label = displayDays > tokenData.length ? ` (${tokenData.length}d × ${(displayDays/tokenData.length).toFixed(1)})` : '';
   grid.innerHTML = TOP_MODELS.map((m,i) => {
     const cost = totalCost(m);
+    const perDay = cost / displayDays;
     const sel = selectedModel && selectedModel.name === m.name;
     return `<div class="model-card${sel?' selected':''}" onclick="pickModel(${i})">
       <div class="mc-name">${m.name}</div>
@@ -191,7 +191,7 @@ function renderModels() {
       <div class="mc-row"><span class="lbl">Output $/1M</span><span class="val">$${m.priceOutput.toFixed(2)}</span></div>
       <div class="mc-row"><span class="lbl">Cached $/1M</span><span class="val">$${(m.priceCached||m.priceInput*0.08).toFixed(2)}</span></div>
       <div class="mc-row"><span class="lbl">Speed</span><span class="val" style="color:var(--orange)">${m.speed} tok/s</span></div>
-      <div class="mc-cost"><div class="big">${fmtCost(cost)}</div><div class="sub">for ${displayDays} day${displayDays>1?'s':''}${label}</div></div>
+      <div class="mc-cost"><div class="big">${fmtCost(perDay)}</div><div class="sub">each day!</div></div>
     </div>`;
   }).join('');
 }
