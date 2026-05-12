@@ -110,8 +110,8 @@
     </h2>
     <div id="daySelector" class="hidden-init" style="margin-bottom:14px;font-size:0.8rem;color:var(--text-dim);align-items:center;gap:8px;">
       Select days:
-      <button class="days-btn" onclick="setDays(1)">1d</button>
-      <button class="days-btn active" onclick="setDays(7)">7d</button>
+      <button class="days-btn active" onclick="setDays(1)">1d</button>
+      <button class="days-btn" onclick="setDays(7)">7d</button>
       <button class="days-btn" onclick="setDays(30)">30d</button>
     </div>
     <div class="model-grid" id="modelGrid"></div>
@@ -139,7 +139,7 @@
 <script>
 const PATHS_URL = 'paths.json';
 const PATHS_FALLBACK = 'example-paths.json';
-let tokenData = [], selectedModel = null, displayDays = 7;
+let tokenData = [], selectedModel = null, displayDays = 1;
 
 const TOP_MODELS = [
   { name:'GPT-5.5 (xhigh)', creator:'OpenAI', priceInput:5.00, priceOutput:30.00, priceCached:0.50, iq:60.24, speed:57 },
