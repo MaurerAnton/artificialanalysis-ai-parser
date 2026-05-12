@@ -119,12 +119,18 @@ The RSC endpoint requires specific headers (`rsc: 1`, `next-router-state-tree`, 
 
 `dashboard.html` — a dark-themed token cost dashboard that lets you see how much you'd spend using different AI model providers.
 
-1. Open `dashboard.html` in a browser (or serve via any HTTP server)
-2. It loads `paths.json` → `data.json` + `models.json`
+`compact-dashboard.html` — a lightweight version: no charts, 4 top models compared side by side. Each model card shows estimated total cost for your token data at a glance.
+
+**Try it live:**  
+[Full dashboard](https://maureranton.github.io/dashboard/dashboard.html) — charts, model selector, date range filter  
+[Compact dashboard](https://maureranton.github.io/dashboard/compact-dashboard.html) — 4 models, instant cost comparison
+
+**To run locally:**
+
+1. Open `dashboard.html` or `compact-dashboard.html` in a browser (or serve via any HTTP server)
+2. They load `paths.json` → `data.json` + `models.json`
 3. Select a model — prices auto-fill from Artificial Analysis data
 4. Tweak token counts — costs recalculate instantly
-
-`compact-dashboard.html` — a lightweight version: no charts, 4 top models compared side by side. Each model card shows estimated total cost for your token data at a glance.
 
 Example files included:
 - `example-paths.json` — points to `example-data.json` and `models.json`
