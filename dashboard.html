@@ -480,7 +480,7 @@
 const PATHS_URL = 'paths.json';
 const PATHS_FALLBACK = 'example-paths.json';
 let DEFAULT_DATA = [];
-let dataSourceOverride = localStorage.getItem('aa_data_source') || '';
+let dataSourceOverride = new URLSearchParams(location.search).get('data_source') || localStorage.getItem('aa_data_source') || '';
 
 function reloadFromSource() {
   const url = document.getElementById('dataSource').value.trim();
