@@ -681,6 +681,7 @@ function renderModelInfo() {
   if (m.iq != null) items.push({label:'Intelligence Index',value:m.iq.toFixed(1),cls:'iq'});
   if (m.coding != null) items.push({label:'Coding Index',value:m.coding.toFixed(1),cls:'iq'});
   if (m.math != null) items.push({label:'Math Index',value:m.math.toFixed(1),cls:'iq'});
+  if (m.priceCached) items.push({label:'Cached Input $/1M',value:'$'+m.priceCached.toFixed(2),cls:'price'});
   items.push({label:'Input $/1M',value:'$'+m.priceInput.toFixed(2),cls:'price'});
   items.push({label:'Output $/1M',value:'$'+m.priceOutput.toFixed(2),cls:'price'});
   if (m.blended) items.push({label:'Blended $/1M',value:'$'+m.blended.toFixed(2),cls:'price'});
@@ -852,7 +853,9 @@ function setChartMode(mode) { chartMode = mode; document.querySelectorAll('.bar-
 function toggleHelp() { const h = document.getElementById('helpText'); h.style.display = h.style.display==='none' ? 'block' : 'none'; }
 function togglePriceConfig() {
   const pc = document.getElementById('priceConfig');
-  pc.style.display = pc.style.display === 'none' ? 'block' : 'none';
+  const showing = pc.style.display === 'none';
+  pc.style.display = showing ? 'block' : 'none';
+  if (showing) pc.scrollIntoView({ behavior: 'smooth' });
 }
 
 document.addEventListener('click', e => { if (!document.getElementById('modelSelectWrap').contains(e.target)) closeDropdown(); });
