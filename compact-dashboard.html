@@ -167,6 +167,13 @@ function pickModel(idx) {
   document.getElementById('selectedLabel').textContent = '— ' + selectedModel.name;
 }
 
+document.addEventListener('keydown', function(e) {
+  if (!selectedModel) return;
+  const idx = TOP_MODELS.findIndex(m => m.name === selectedModel.name);
+  if (e.key === 'ArrowRight') { e.preventDefault(); pickModel(idx < TOP_MODELS.length-1 ? idx+1 : 0); }
+  else if (e.key === 'ArrowLeft') { e.preventDefault(); pickModel(idx > 0 ? idx-1 : TOP_MODELS.length-1); }
+});
+
 function renderTable() {
   const m = selectedModel || TOP_MODELS[0];
   let tc=0,ti=0,to=0,tp=0,html='';
