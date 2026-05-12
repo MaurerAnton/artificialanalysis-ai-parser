@@ -327,7 +327,10 @@
 
   <header>
     <h1>AI Model Cost Calculator</h1>
-    <p>Token Usage Dashboard &nbsp;|&nbsp; Pricing from Artificial Analysis</p>
+    <p>Token Usage Dashboard &nbsp;|&nbsp; Pricing from Artificial Analysis &nbsp;|&nbsp;
+      <input type="text" id="dataSource" placeholder="data.json URL" onkeydown="if(event.key==='Enter')reloadFromSource()"
+        style="background:var(--bg);border:1px solid var(--border);color:var(--text-dim);padding:2px 8px;border-radius:4px;font-size:0.75rem;width:220px;outline:none;font-family:inherit;">
+    </p>
   </header>
 
   <!-- PRICE CONFIG -->
@@ -477,6 +480,15 @@
 const PATHS_URL = 'paths.json';
 const PATHS_FALLBACK = 'example-paths.json';
 let DEFAULT_DATA = [];
+let dataSourceOverride = localStorage.getItem('aa_data_source') || '';
+
+function reloadFromSource() {
+  const url = document.getElementById('dataSource').value.trim();
+  dataSourceOverride = url;
+  if (url) localStorage.setItem('aa_data_source', url);
+  else localStorage.removeItem('aa_data_source');
+  location.reload();
+}
 
 // ═══════════════════════════════════════════════════
 //  STATE
@@ -577,9 +589,12 @@ async function loadModels() {
     if (!pathsResp.ok) throw new Error('paths.json HTTP ' + pathsResp.status);
     const paths = await pathsResp.json();
 
+    // Use custom data source URL if provided
+    const dataUrl = dataSourceOverride || paths.data;
+
     // Step 2: load data and models in parallel
     const [dataResp, modelsResp] = await Promise.all([
-      fetch(paths.data),
+      fetch(dataUrl),
       fetch(paths.models)
     ]);
     if (!dataResp.ok) throw new Error('data HTTP ' + dataResp.status);
@@ -892,6 +907,7 @@ document.addEventListener('click', e => { if (!document.getElementById('modelSel
 // ═══════════════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════════════
+if (dataSourceOverride) document.getElementById('dataSource').value = dataSourceOverride;
 loadModels();
 </script>
 </body>

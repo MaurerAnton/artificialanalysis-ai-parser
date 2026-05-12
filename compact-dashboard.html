@@ -101,7 +101,10 @@
 
   <header>
     <h1>AI Model Cost Comparison</h1>
-    <p>Token usage cost across models &nbsp;|&nbsp; <span id="dateRange"></span></p>
+    <p>Token usage cost across models &nbsp;|&nbsp; <span id="dateRange"></span>
+      &nbsp;|&nbsp; <input type="text" id="dataSource" placeholder="data.json URL" onkeydown="if(event.key==='Enter')reloadFromSource()"
+        style="background:var(--bg);border:1px solid var(--border);color:var(--text-dim);padding:2px 8px;border-radius:4px;font-size:0.72rem;width:180px;outline:none;font-family:inherit;">
+    </p>
   </header>
 
   <div class="section" style="font-size:0.88rem;color:var(--text-dim);line-height:1.7;">
@@ -148,6 +151,15 @@
 const PATHS_URL = 'paths.json';
 const PATHS_FALLBACK = 'example-paths.json';
 let tokenData = [], selectedModel = null, displayDays = 1;
+let dataSourceOverride = localStorage.getItem('aa_data_source') || '';
+
+function reloadFromSource() {
+  const url = document.getElementById('dataSource').value.trim();
+  dataSourceOverride = url;
+  if (url) localStorage.setItem('aa_data_source', url);
+  else localStorage.removeItem('aa_data_source');
+  location.reload();
+}
 
 const TOP_MODELS = [
   { name:'GPT-5.5 (xhigh)', creator:'OpenAI', priceInput:5.00, priceOutput:30.00, priceCached:0.50, iq:60.24, speed:57 },
@@ -255,7 +267,8 @@ async function init() {
     if (!pathsResp.ok) { pathsResp = await fetch(PATHS_FALLBACK); }
     if (!pathsResp.ok) throw new Error('paths.json HTTP '+pathsResp.status);
     const paths = await pathsResp.json();
-    const dataResp = await fetch(paths.data);
+    const dataUrl = dataSourceOverride || paths.data;
+    const dataResp = await fetch(dataUrl);
     if (!dataResp.ok) throw new Error('data HTTP '+dataResp.status);
     tokenData = await dataResp.json();
     if (!Array.isArray(tokenData)) throw new Error('Expected array');
@@ -269,6 +282,7 @@ async function init() {
   } catch(e) { console.error(e); setStatus('err', e.message); }
 }
 
+if (dataSourceOverride) document.getElementById('dataSource').value = dataSourceOverride;
 init();
 </script>
 </body>
