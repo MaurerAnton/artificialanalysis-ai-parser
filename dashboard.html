@@ -405,6 +405,7 @@
       <span><span class="icon">📋</span> Detailed Breakdown</span>
       <span style="font-size:0.7rem;color:var(--text-dim);font-weight:400;display:flex;align-items:center;gap:6px;">
         <button class="model-nav-btn" onclick="selectPrev()" title="Previous (←)" style="width:28px;height:30px;font-size:0.75rem;">◀</button>
+        <button class="model-nav-btn" onclick="selectNext()" title="Next (→)" style="width:28px;height:30px;font-size:0.75rem;">▶</button>
         <span class="model-inline-select" id="modelSelectWrap" style="position:relative;">
           <span class="model-select-trigger" id="modelTrigger" onclick="toggleDropdown()" style="border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:0.75rem;">
             <span class="mname" id="selectedModelName">— Select a model —</span>
@@ -416,7 +417,6 @@
             <span class="model-options" id="modelOptions"><span class="no-results">Loading models…</span></span>
           </span>
         </span>
-        <button class="model-nav-btn" onclick="selectNext()" title="Next (→)" style="width:28px;height:30px;font-size:0.75rem;">▶</button>
         <span class="status" id="status"></span>
         <button class="btn-sm" onclick="togglePriceConfig()" title="Override model prices" style="margin-left:4px;">⚙ Set custom price</button>
         <span id="debugWidth" style="font-size:0.55rem;color:var(--surface2);margin-left:4px;"></span>
