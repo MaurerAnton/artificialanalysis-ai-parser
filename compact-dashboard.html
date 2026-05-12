@@ -181,7 +181,8 @@ function renderModels() {
   const grid = document.getElementById('modelGrid');
   grid.innerHTML = TOP_MODELS.map((m,i) => {
     const cost = totalCost(m);
-    const perDay = cost / displayDays;
+    const showVal = displayDays === 1 ? totalCost(m, 1) : cost;
+    const sub = displayDays === 1 ? 'each day!' : 'for ' + displayDays + ' days';
     const sel = selectedModel && selectedModel.name === m.name;
     return `<div class="model-card${sel?' selected':''}" onclick="pickModel(${i})">
       <div class="mc-name">${m.name}</div>
@@ -191,7 +192,7 @@ function renderModels() {
       <div class="mc-row"><span class="lbl">Output $/1M</span><span class="val">$${m.priceOutput.toFixed(2)}</span></div>
       <div class="mc-row"><span class="lbl">Cached $/1M</span><span class="val">$${(m.priceCached||m.priceInput*0.08).toFixed(2)}</span></div>
       <div class="mc-row"><span class="lbl">Speed</span><span class="val" style="color:var(--orange)">${m.speed} tok/s</span></div>
-      <div class="mc-cost"><div class="big">${fmtCost(perDay)}</div><div class="sub">each day!</div></div>
+      <div class="mc-cost"><div class="big">${fmtCost(showVal)}</div><div class="sub">${sub}</div></div>
     </div>`;
   }).join('');
 }
