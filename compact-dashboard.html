@@ -48,36 +48,43 @@
   .sum-row td { background: var(--surface2); font-weight: 700; border-top: 2px solid var(--accent); }
   .table-wrap { overflow-x: auto; }
 
+  /* vertical card mode — applied dynamically by JS when table overflows */
+  .table-wrap.vertical table, .table-wrap.vertical thead, .table-wrap.vertical tbody,
+  .table-wrap.vertical th, .table-wrap.vertical td, .table-wrap.vertical tr { display: block; }
+  .table-wrap.vertical thead tr { display: none; }
+  .table-wrap.vertical tbody tr {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    padding: 10px 12px;
+  }
+  .table-wrap.vertical tbody tr:hover { background: var(--surface2); }
+  .table-wrap.vertical tbody td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+    border: none;
+    font-size: 0.78rem;
+  }
+  .table-wrap.vertical tbody td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--text-dim);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .table-wrap.vertical .sum-row td {
+    border-top: 1px solid var(--accent);
+    padding-top: 8px;
+    margin-top: 4px;
+  }
+
   @media (max-width: 600px) {
     body { padding: 8px; }
     .model-grid { grid-template-columns: 1fr 1fr; }
-    table, thead, tbody, th, td, tr { display: block; }
-    thead tr { display: none; }
-    tbody tr {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      margin-bottom: 8px;
-      padding: 10px 12px;
-    }
-    tbody tr:hover { background: var(--surface2); }
-    tbody td {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 4px 0;
-      border: none;
-      font-size: 0.78rem;
-    }
-    tbody td::before {
-      content: attr(data-label);
-      font-weight: 600;
-      color: var(--text-dim);
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .sum-row td { border-top: 1px solid var(--accent); padding-top: 8px; margin-top: 4px; }
   }
 </style>
 </head>
@@ -167,12 +174,14 @@ function pickModel(idx) {
   document.getElementById('selectedLabel').textContent = '— ' + selectedModel.name;
 }
 
-document.addEventListener('keydown', function(e) {
-  if (!selectedModel) return;
-  const idx = TOP_MODELS.findIndex(m => m.name === selectedModel.name);
-  if (e.key === 'ArrowRight') { e.preventDefault(); pickModel(idx < TOP_MODELS.length-1 ? idx+1 : 0); }
-  else if (e.key === 'ArrowLeft') { e.preventDefault(); pickModel(idx > 0 ? idx-1 : TOP_MODELS.length-1); }
-});
+function adaptTable() {
+  const wrap = document.querySelector('.table-wrap');
+  const table = wrap.querySelector('table');
+  if (!table) return;
+  const fits = table.scrollWidth <= wrap.clientWidth + 2;
+  wrap.classList.toggle('vertical', !fits);
+}
+window.addEventListener('resize', adaptTable);
 
 function renderTable() {
   const m = selectedModel || TOP_MODELS[0];
@@ -185,6 +194,7 @@ function renderTable() {
   const gt = totalCost(m);
   html+=`<tr class="sum-row"><td data-label="Date">TOTAL</td><td class="num" data-label="Prompts">${tp}</td><td class="num" data-label="Cached">${fmtNum(tc)}</td><td class="num" data-label="Input">${fmtNum(ti)}</td><td class="num" data-label="Output">${fmtNum(to)}</td><td class="cost-val" data-label="Cost">${fmtCost(gt)}</td></tr>`;
   document.getElementById('tableBody').innerHTML = html;
+  adaptTable();
 }
 
 function setStatus(type, msg) {
