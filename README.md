@@ -124,6 +124,8 @@ The RSC endpoint requires specific headers (`rsc: 1`, `next-router-state-tree`, 
 3. Select a model — prices auto-fill from Artificial Analysis data
 4. Tweak token counts — costs recalculate instantly
 
+`compact-dashboard.html` — a lightweight version: no charts, 4 top models compared side by side. Each model card shows estimated total cost for your token data at a glance.
+
 Example files included:
 - `example-paths.json` — points to `example-data.json` and `models.json`
 - `example-data.json` — 7 days of synthetic token data for demo

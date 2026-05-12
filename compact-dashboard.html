@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Model Cost Comparison — Compact Dashboard</title>
+<style>
+  :root {
+    --bg: #0f1117; --surface: #1a1d2e; --surface2: #242842; --border: #2e3354;
+    --text: #e2e4f0; --text-dim: #8b8fa8; --accent: #6c5ce7; --green: #00cec9;
+    --orange: #fdcb6e; --pink: #fd79a8; --red: #ff6b6b; --blue: #74b9ff;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 20px; }
+  .container { max-width: 1000px; margin: 0 auto; }
+  header { text-align: center; padding: 20px 0; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+  header h1 { font-size: 1.5rem; background: linear-gradient(135deg, var(--accent), var(--green)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  header p { color: var(--text-dim); font-size: 0.8rem; margin-top: 4px; }
+  .section { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+  .section h2 { font-size: 1rem; margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+  .status { font-size: 0.75rem; padding: 3px 8px; border-radius: 4px; }
+  .status.ok { color: var(--green); background: rgba(0,206,201,0.1); }
+  .status.err { color: var(--red); background: rgba(255,107,107,0.1); }
+  .status.loading { color: var(--orange); background: rgba(253,203,110,0.1); }
+
+  .model-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .model-card {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; cursor: pointer; transition: border-color 0.2s;
+  }
+  .model-card:hover { border-color: var(--accent); }
+  .model-card.selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .model-card .mc-name { font-weight: 600; font-size: 0.9rem; margin-bottom: 2px; }
+  .model-card .mc-creator { font-size: 0.7rem; color: var(--text-dim); margin-bottom: 10px; }
+  .model-card .mc-row { display: flex; justify-content: space-between; font-size: 0.78rem; padding: 3px 0; }
+  .model-card .mc-row .lbl { color: var(--text-dim); }
+  .model-card .mc-row .val { font-weight: 600; }
+  .model-card .mc-cost { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border); text-align: center; }
+  .model-card .mc-cost .big { font-size: 1.3rem; font-weight: 700; color: var(--green); }
+  .model-card .mc-cost .sub { font-size: 0.7rem; color: var(--text-dim); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  thead th { text-align: left; padding: 8px 10px; border-bottom: 2px solid var(--border); color: var(--text-dim); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+  tbody td { padding: 7px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  tbody tr:hover { background: rgba(108, 92, 231, 0.06); }
+  .date-cell { font-weight: 600; }
+  .num { font-variant-numeric: tabular-nums; font-family: 'SF Mono', 'Consolas', monospace; font-size: 0.78rem; }
+  .cost-val { color: var(--green); font-weight: 600; }
+  .sum-row td { background: var(--surface2); font-weight: 700; border-top: 2px solid var(--accent); }
+  .table-wrap { overflow-x: auto; }
+
+  @media (max-width: 600px) {
+    body { padding: 8px; }
+    .model-grid { grid-template-columns: 1fr 1fr; }
+    table { font-size: 0.72rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>AI Model Cost Comparison</h1>
+    <p>Token usage cost across models &nbsp;|&nbsp; <span id="dateRange"></span></p>
+  </header>
+
+  <div class="section">
+    <h2>🤖 Models <span class="status" id="status"></span></h2>
+    <div class="model-grid" id="modelGrid"></div>
+  </div>
+
+  <div class="section">
+    <h2>📋 Daily Breakdown <span style="font-size:0.7rem;color:var(--text-dim);font-weight:400;" id="selectedLabel"></span></h2>
+    <div class="table-wrap">
+      <table><thead><tr>
+        <th>Date</th><th>Prompts</th><th>Cached</th><th>Input</th><th>Output</th><th>Daily Cost</th>
+      </tr></thead><tbody id="tableBody"></tbody></table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const PATHS_URL = 'paths.json';
+const PATHS_FALLBACK = 'example-paths.json';
+let tokenData = [], selectedModel = null;
+
+const TOP_MODELS = [
+  { name:'GPT-5.5 (xhigh)', creator:'OpenAI', priceInput:5.00, priceOutput:30.00, priceCached:0.50, iq:60.24, speed:57 },
+  { name:'Claude Opus 4.7 (Max)', creator:'Anthropic', priceInput:6.25, priceOutput:25.00, priceCached:0.50, iq:57.28, speed:43 },
+  { name:'Gemini 3.1 Pro Preview', creator:'Google', priceInput:3.00, priceOutput:12.00, priceCached:0.30, iq:56.8, speed:121 },
+  { name:'Cerebras + GLM 4.7', creator:'Cerebras / Z AI', priceInput:2.20, priceOutput:2.75, priceCached:2.20, iq:54.0, speed:1000 },
+];
+
+function sumArr(arr) { return arr.reduce((a,b)=>a+b,0); }
+function fmtNum(n) {
+  if (n>=1e9) return (n/1e9).toFixed(2)+'B';
+  if (n>=1e6) return (n/1e6).toFixed(2)+'M';
+  if (n>=1e3) return (n/1e3).toFixed(1)+'K';
+  return n.toLocaleString();
+}
+function fmtCost(n) {
+  if (n>=1e6) return '$'+(n/1e6).toFixed(2)+'M';
+  if (n>=1e3) return '$'+(n/1e3).toFixed(2)+'K';
+  return '$'+n.toFixed(2);
+}
+
+function calcCost(model, day) {
+  const c = sumArr(day.cached), i = sumArr(day.input), o = sumArr(day.output);
+  const pc = model.priceCached || model.priceInput * 0.08 || 0;
+  return { cached:c/1e6*pc, input:i/1e6*model.priceInput, output:o/1e6*model.priceOutput };
+}
+
+function totalCost(model) {
+  let tc=0,ti=0,to=0;
+  tokenData.forEach(d => { const c=calcCost(model,d); tc+=c.cached; ti+=c.input; to+=c.output; });
+  return tc+ti+to;
+}
+
+function renderModels() {
+  const grid = document.getElementById('modelGrid');
+  grid.innerHTML = TOP_MODELS.map((m,i) => {
+    const cost = totalCost(m);
+    const sel = selectedModel && selectedModel.name === m.name;
+    return `<div class="model-card${sel?' selected':''}" onclick="pickModel(${i})">
+      <div class="mc-name">${m.name}</div>
+      <div class="mc-creator">${m.creator}</div>
+      <div class="mc-row"><span class="lbl">Intelligence</span><span class="val" style="color:var(--accent)">${m.iq.toFixed(1)}</span></div>
+      <div class="mc-row"><span class="lbl">Input $/1M</span><span class="val">$${m.priceInput.toFixed(2)}</span></div>
+      <div class="mc-row"><span class="lbl">Output $/1M</span><span class="val">$${m.priceOutput.toFixed(2)}</span></div>
+      <div class="mc-row"><span class="lbl">Cached $/1M</span><span class="val">$${(m.priceCached||m.priceInput*0.08).toFixed(2)}</span></div>
+      <div class="mc-row"><span class="lbl">Speed</span><span class="val" style="color:var(--orange)">${m.speed} tok/s</span></div>
+      <div class="mc-cost"><div class="big">${fmtCost(cost)}</div><div class="sub">total for ${tokenData.length} days</div></div>
+    </div>`;
+  }).join('');
+}
+
+function pickModel(idx) {
+  selectedModel = TOP_MODELS[idx];
+  renderModels();
+  renderTable();
+  document.getElementById('selectedLabel').textContent = '— ' + selectedModel.name;
+}
+
+function renderTable() {
+  const m = selectedModel || TOP_MODELS[0];
+  let tc=0,ti=0,to=0,tp=0,html='';
+  tokenData.forEach(d => {
+    const c=calcCost(m,d), p=sumArr(d.prompts);
+    tc+=sumArr(d.cached); ti+=sumArr(d.input); to+=sumArr(d.output); tp+=p;
+    html+=`<tr><td class="date-cell">${d.date}</td><td class="num">${p}</td><td class="num">${fmtNum(sumArr(d.cached))}</td><td class="num">${fmtNum(sumArr(d.input))}</td><td class="num">${fmtNum(sumArr(d.output))}</td><td class="cost-val">${fmtCost(c.cached+c.input+c.output)}</td></tr>`;
+  });
+  const gt = totalCost(m);
+  html+=`<tr class="sum-row"><td>TOTAL</td><td class="num">${tp}</td><td class="num">${fmtNum(tc)}</td><td class="num">${fmtNum(ti)}</td><td class="num">${fmtNum(to)}</td><td class="cost-val">${fmtCost(gt)}</td></tr>`;
+  document.getElementById('tableBody').innerHTML = html;
+}
+
+function setStatus(type, msg) {
+  const el = document.getElementById('status');
+  el.className = 'status ' + type;
+  el.textContent = msg;
+}
+
+async function init() {
+  setStatus('loading', 'Loading…');
+  try {
+    let pathsResp = await fetch(PATHS_URL);
+    if (!pathsResp.ok) { pathsResp = await fetch(PATHS_FALLBACK); }
+    if (!pathsResp.ok) throw new Error('paths.json HTTP '+pathsResp.status);
+    const paths = await pathsResp.json();
+    const dataResp = await fetch(paths.data);
+    if (!dataResp.ok) throw new Error('data HTTP '+dataResp.status);
+    tokenData = await dataResp.json();
+    if (!Array.isArray(tokenData)) throw new Error('Expected array');
+    document.getElementById('dateRange').textContent = tokenData[0].date + ' – ' + tokenData[tokenData.length-1].date;
+    setStatus('ok', tokenData.length + ' days');
+    selectedModel = TOP_MODELS[0];
+    renderModels();
+    renderTable();
+  } catch(e) { console.error(e); setStatus('err', e.message); }
+}
+
+init();
+</script>
+</body>
+</html>
