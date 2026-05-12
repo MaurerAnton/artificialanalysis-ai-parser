@@ -225,7 +225,7 @@ function renderTable() {
     tc+=sumArr(d.cached); ti+=sumArr(d.input); to+=sumArr(d.output); tp+=p;
     html+=`<tr><td class="date-cell" data-label="Date">${d.date}</td><td class="num" data-label="Prompts">${p}</td><td class="num" data-label="Cached">${fmtNum(sumArr(d.cached))}</td><td class="num" data-label="Input">${fmtNum(sumArr(d.input))}</td><td class="num" data-label="Output">${fmtNum(sumArr(d.output))}</td><td class="cost-val" data-label="Cost">${fmtCost(c.cached+c.input+c.output)}</td></tr>`;
   });
-  const gt = totalCost(m);
+  const gt = totalCost(m, tokenData.length);
   html+=`<tr class="sum-row"><td data-label="Date">TOTAL</td><td class="num" data-label="Prompts">${tp}</td><td class="num" data-label="Cached">${fmtNum(tc)}</td><td class="num" data-label="Input">${fmtNum(ti)}</td><td class="num" data-label="Output">${fmtNum(to)}</td><td class="cost-val" data-label="Cost">${fmtCost(gt)}</td></tr>`;
   document.getElementById('tableBody').innerHTML = html;
   adaptTable();
