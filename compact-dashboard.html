@@ -54,6 +54,7 @@
   }
   .days-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
   .days-btn:hover:not(.active) { border-color: var(--accent); color: var(--text); }
+  .hidden-init { display: none; }
 
   /* vertical card mode — applied dynamically by JS when table overflows */
   .table-wrap.vertical table, .table-wrap.vertical thead, .table-wrap.vertical tbody,
@@ -107,7 +108,7 @@
     <h2>🤖 What would I pay providers if I used their capacity for my needs?
       <span class="status" id="status"></span>
     </h2>
-    <div id="daySelector" style="display:none;margin-bottom:14px;font-size:0.8rem;color:var(--text-dim);align-items:center;gap:8px;">
+    <div id="daySelector" class="hidden-init" style="margin-bottom:14px;font-size:0.8rem;color:var(--text-dim);align-items:center;gap:8px;">
       Select days:
       <button class="days-btn active" onclick="setDays(1)">1d</button>
       <button class="days-btn" onclick="setDays(7)">7d</button>
@@ -248,6 +249,7 @@ async function init() {
     document.getElementById('dateRange').textContent = tokenData[0].date + ' – ' + tokenData[tokenData.length-1].date;
     setStatus('ok', '');
     selectedModel = TOP_MODELS[0];
+    document.getElementById('daySelector').classList.remove('hidden-init');
     document.getElementById('daySelector').style.display = 'flex';
     renderModels();
     renderTable();
