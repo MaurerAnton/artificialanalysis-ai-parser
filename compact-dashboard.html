@@ -148,6 +148,8 @@
       <a href="https://cursor.com/pricing" style="color:var(--accent);">Cursor</a> ·
       <a href="https://mistral.ai/pricing" style="color:var(--accent);">Mistral</a> ·
       <a href="https://www.midjourney.com/home" style="color:var(--accent);">Midjourney</a> ·
+      <a href="https://huggingface.co/pricing" style="color:var(--accent);">HF</a> ·
+      <a href="https://openrouter.ai/pricing" style="color:var(--accent);">OpenRouter</a> ·
       <a href="https://one.google.com/about/ai-premium" style="color:var(--accent);">Google</a>.
       "est." = provider doesn't publish exact limits. Pricing as of May 2026.
     </div>
@@ -222,6 +224,9 @@ const PLANS = [
   { name:'Google AI Plus',     price:8,    limit:10000,  unit:'msgs/mo est.' },
   { name:'Google AI Pro',      price:27,   limit:30000,  unit:'msgs/mo est.' },
   { name:'Google AI Ultra',    price:54,   limit:100000, unit:'msgs/mo est.' },
+  { name:'HuggingFace PRO',   price:9,    limit:20000,  unit:'credits/mo est.' },
+  { name:'OpenRouter Free',   price:0,    limit:1500,   unit:'reqs/mo ★' },
+  // API-only platforms (no subscription — pay per token)
   { name:'API (pay as you go)',price:null, limit:Infinity, unit:'' },
 ];
 
