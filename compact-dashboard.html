@@ -147,7 +147,7 @@
     </div>
     <div class="table-wrap" style="margin-bottom:8px;">
       <table><thead><tr>
-        <th>Plan</th><th>Price/mo</th><th>Request limit</th><th>Coverage</th><th>Status</th>
+        <th>Plan</th><th>Price/mo</th><th>Request limit</th><th>Coverage</th><th>Subs needed</th>
       </tr></thead><tbody id="plansBody"></tbody></table>
     </div>
     <div style="font-size:0.7rem;color:var(--text-dim);margin-top:4px;">
@@ -340,16 +340,9 @@ function renderPlans() {
     const barH = Math.max(4, pct);
     const barColor = pct >= 100 ? 'var(--green)' : pct > 40 ? 'var(--orange)' : 'var(--pink)';
 
-    // Subs: only meaningful for monthly quota plans (stackable), not time-windowed
-    const isTimeWindow = u.includes('/5h') || u.includes('/3h') || u.includes('/day');
-    let subsStr;
-    if (isTimeWindow) {
-      subsStr = pct >= 100 ? '✓' : '1×';
-    } else {
-      const subs = Math.max(1, Math.ceil(userVal / p.limit));
-      subsStr = subs > 1 ? subs + '×' : '1×';
-      if (subs > 1) subsStr += ' <span style="font-weight:400;color:var(--text-dim);">(' + fmtCost(subs * p.price) + ')</span>';
-    }
+    const subs = Math.max(1, Math.ceil(userVal / p.limit));
+    const totalCost = subs * p.price;
+    const subsStr = subs > 1 ? subs + '× <span style="font-weight:400;color:var(--text-dim);">(' + fmtCost(totalCost) + ')</span>' : '1×';
 
     html += `<tr>
       <td style="font-weight:600;">${p.name}</td>
