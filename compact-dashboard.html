@@ -137,10 +137,10 @@
     <h2>💳 How good is a subscription plan for my consumption?</h2>
     <div class="table-wrap" style="margin-bottom:8px;">
       <table><thead><tr>
-        <th>Plan</th><th>Price/mo</th><th>Est. token cap</th><th>Your monthly use</th><th>Plan used</th><th>Savings vs API</th>
+        <th>Plan</th><th>Price/mo</th><th>Est. token cap</th><th>Coverage</th><th>Subs needed</th>
       </tr></thead><tbody id="plansBody"></tbody></table>
     </div>
-    <div style="font-size:0.7rem;color:var(--text-dim);">Token caps are rough estimates based on typical plan limits. API cost is calculated using the selected model's pricing.</div>
+    <div style="font-size:0.7rem;color:var(--text-dim);">Token caps are rough estimates based on published plan limits and typical usage patterns. Costs assume the selected model.</div>
   </div>
 
   <div style="text-align:center;padding:20px 12px;margin-top:8px;border-top:1px solid var(--surface2);font-size:0.8rem;color:var(--text-dim);">
@@ -179,10 +179,15 @@ const TOP_MODELS = [
 ];
 
 const PLANS = [
-  { name:'ChatGPT Plus', price:20, tokens:30_000_000 },
-  { name:'Claude Pro', price:20, tokens:30_000_000 },
-  { name:'Claude Max', price:100, tokens:200_000_000 },
-  { name:'Gemini Advanced', price:20, tokens:40_000_000 },
+  { name:'ChatGPT Plus',     price:20,  tokens:38_000_000 },
+  { name:'ChatGPT Pro',      price:200, tokens:500_000_000 },
+  { name:'Claude Pro',       price:20,  tokens:20_000_000 },
+  { name:'Claude Max',       price:100, tokens:200_000_000 },
+  { name:'Claude Team',      price:25,  tokens:40_000_000 },
+  { name:'Gemini Advanced',  price:20,  tokens:40_000_000 },
+  { name:'Perplexity Pro',   price:20,  tokens:15_000_000 },
+  { name:'Cursor Pro',       price:20,  tokens:10_000_000 },
+  { name:'GitHub Copilot',   price:10,  tokens:8_000_000 },
   { name:'API (pay as you go)', price:null, tokens:Infinity },
 ];
 
@@ -267,24 +272,39 @@ function renderTable() {
 }
 
 function renderPlans() {
-  const m = selectedModel || TOP_MODELS[0];
   const totalTok = tokenData.reduce((a,d)=>a+sumArr(d.cached)+sumArr(d.input)+sumArr(d.output),0);
   const monthlyTok = tokenData.length ? totalTok / tokenData.length * 30 : 0;
-  const apiCost = monthlyTok / 1e6 * ((m.priceInput + m.priceOutput) / 2); // rough blended
   let html = '';
 
   PLANS.forEach(p => {
-    const pct = p.tokens === Infinity ? 0 : Math.min(100, monthlyTok / p.tokens * 100);
-    const bar = p.tokens === Infinity ? '' : `<div style="background:var(--surface2);border-radius:3px;height:6px;margin-top:4px;overflow:hidden;"><div style="height:100%;width:${pct}%;background:${pct>90?'var(--pink)':pct>50?'var(--orange)':'var(--green)'};border-radius:3px;"></div></div>`;
-    const savings = p.price !== null ? apiCost - p.price : 0;
-    const savStr = p.price === null ? '—' : (savings > 0 ? '<span style="color:var(--green)">-$' + savings.toFixed(0) + '</span>' : '<span style="color:var(--pink)">+$' + Math.abs(savings).toFixed(0) + '</span>');
+    if (p.tokens === Infinity) {
+      html += `<tr>
+        <td style="font-weight:600;">${p.name}</td>
+        <td>—</td><td class="num">∞</td>
+        <td>—</td><td>—</td>
+      </tr>`;
+      return;
+    }
+
+    const pct = Math.min(100, monthlyTok / p.tokens * 100);
+    const subs = Math.max(1, Math.ceil(monthlyTok / p.tokens));
+    const totalCost = subs * p.price;
+    const barH = Math.max(4, pct);
+    const barColor = pct > 95 ? 'var(--pink)' : pct > 60 ? 'var(--orange)' : 'var(--green)';
+
     html += `<tr>
       <td style="font-weight:600;">${p.name}</td>
-      <td>${p.price !== null ? '$'+p.price : '—'}</td>
-      <td class="num">${p.tokens === Infinity ? '∞' : fmtNum(p.tokens)}</td>
-      <td class="num">${fmtNum(monthlyTok)}${bar}</td>
-      <td class="num">${p.tokens === Infinity ? '—' : Math.round(pct)+'%'}</td>
-      <td>${savStr}</td>
+      <td>$${p.price}</td>
+      <td class="num">${fmtNum(p.tokens)}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div style="flex:1;background:var(--surface2);border-radius:3px;height:8px;overflow:hidden;min-width:60px;">
+            <div style="height:100%;width:${barH}%;background:${barColor};border-radius:3px;transition:width 0.4s;"></div>
+          </div>
+          <span class="num" style="font-size:0.7rem;min-width:32px;">${Math.round(pct)}%</span>
+        </div>
+      </td>
+      <td style="font-weight:600;">${subs > 1 ? subs + '×' : '1×'} <span style="font-weight:400;color:var(--text-dim);">(${fmtCost(totalCost)})</span></td>
     </tr>`;
   });
 
