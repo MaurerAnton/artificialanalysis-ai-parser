@@ -190,28 +190,34 @@ const TOP_MODELS = [
 ];
 
 const PLANS = [
-  // ChatGPT — published: Free=10 msg/5hr, Go=10× Free, Plus=160/3hr, Pro=5×/20×
-  { name:'ChatGPT Free',       price:0,    limit:1440,   unit:'msgs/mo ★' },
-  { name:'ChatGPT Go',         price:8,    limit:14400,  unit:'msgs/mo ★' },
-  { name:'ChatGPT Plus',       price:20,   limit:38400,  unit:'msgs/mo ★' },
-  { name:'ChatGPT Pro $100',   price:100,  limit:192000, unit:'msgs/mo ★' },
-  { name:'ChatGPT Pro $200',   price:200,  limit:768000, unit:'msgs/mo ★' },
+  // ChatGPT — Free=10/5h, Go=10×, Plus=160/3h, Pro=5×/20×
+  { name:'ChatGPT Free',       price:0,    limit:10,     unit:'msgs / 5h ★' },
+  { name:'ChatGPT Go',         price:8,    limit:100,    unit:'msgs / 5h ★' },
+  { name:'ChatGPT Plus',       price:20,   limit:160,    unit:'msgs / 3h ★' },
+  { name:'ChatGPT Pro $100',   price:100,  limit:800,    unit:'msgs / 3h ★' },
+  { name:'ChatGPT Pro $200',   price:200,  limit:3200,   unit:'msgs / 3h ★' },
   // GitHub Copilot — published: premium req/month + unlimited GPT-5 mini
   { name:'GitHub Copilot Free',price:0,    limit:50,     unit:'prem req/mo ★' },
   { name:'GitHub Copilot Pro', price:10,   limit:300,    unit:'prem req/mo ★' },
   { name:'GitHub Copilot Pro+',price:39,   limit:1500,   unit:'prem req/mo ★' },
   // Claude — per clickrank.ai: ~45/225/900 msgs per 5h rolling window
-  { name:'Claude Pro',         price:20,   limit:6500,   unit:'msgs/mo ★' },
-  { name:'Claude Max 5×',      price:100,  limit:32000,  unit:'msgs/mo ★' },
-  { name:'Claude Max 20×',     price:200,  limit:130000, unit:'msgs/mo ★' },
-  { name:'Claude Team Std',    price:25,   limit:10000,  unit:'msgs/mo est.' },
-  { name:'Claude Team Prem',   price:125,  limit:40000,  unit:'msgs/mo est.' },
+  { name:'Claude Pro',         price:20,   limit:45,     unit:'msgs / 5h ★' },
+  { name:'Claude Max 5×',      price:100,  limit:225,    unit:'msgs / 5h ★' },
+  { name:'Claude Max 20×',     price:200,  limit:900,    unit:'msgs / 5h ★' },
+  { name:'Claude Team Std',    price:25,   limit:60,     unit:'msgs / 5h est.' },
+  { name:'Claude Team Prem',   price:125,  limit:250,    unit:'msgs / 5h est.' },
   // Cursor — opaque "extended/limited Agent requests"
-  { name:'Cursor Pro',         price:20,   limit:8000,   unit:'req/mo est.' },
-  { name:'Cursor Ultra',       price:60,   limit:30000,  unit:'req/mo est.' },
+  { name:'Cursor Pro',         price:20,   limit:250,    unit:'req / day est.' },
+  { name:'Cursor Ultra',       price:60,   limit:1000,   unit:'req / day est.' },
   // Mistral — "up to 6× Free" / "up to 30× Think"
-  { name:'Mistral Pro',        price:15,   limit:12000,  unit:'msgs/mo est.' },
-  { name:'Mistral Team',       price:25,   limit:20000,  unit:'msgs/mo est.' },
+  { name:'Mistral Pro',        price:15,   limit:400,    unit:'msgs / day est.' },
+  { name:'Mistral Team',       price:25,   limit:700,    unit:'msgs / day est.' },
+  // Google AI — Pro model limits (Thinking=1500/500 is separate Deep Think mode)
+  { name:'Google AI Pro',      price:20,   limit:100,    unit:'msgs / day ★' },
+  { name:'Google AI Ultra',    price:250,  limit:500,    unit:'msgs / day ★' },
+  // HuggingFace + OpenRouter
+  { name:'HuggingFace PRO',    price:9,    limit:20000,  unit:'credits/mo est.' },
+  { name:'OpenRouter Free',    price:0,    limit:50,     unit:'reqs / day ★' },
   // API-only platforms (no subscription — pay per token)
   { name:'API (pay as you go)',price:null, limit:Infinity, unit:'' },
 ];
@@ -298,7 +304,7 @@ function renderTable() {
 
 function renderPlans() {
   const totalPrompts = tokenData.reduce((a,d)=>a+sumArr(d.prompts),0);
-  const monthlyPrompts = tokenData.length ? totalPrompts / tokenData.length * 30 : 0;
+  const dailyP = tokenData.length ? totalPrompts / tokenData.length : 0;
   let html = '';
 
   PLANS.forEach(p => {
@@ -311,8 +317,17 @@ function renderPlans() {
       return;
     }
 
-    const pct = Math.min(100, p.limit / monthlyPrompts * 100);
-    const subs = Math.max(1, Math.ceil(monthlyPrompts / p.limit));
+    // Normalize user prompts to plan's time window
+    const u = p.unit;
+    let userVal;
+    if (u.includes('/mo'))      userVal = dailyP * 30;
+    else if (u.includes('/day')) userVal = dailyP;
+    else if (u.includes('/5h'))  userVal = dailyP / 4.8;
+    else if (u.includes('/3h'))  userVal = dailyP / 8;
+    else                         userVal = dailyP * 30;
+
+    const pct = Math.min(100, p.limit / userVal * 100);
+    const subs = Math.max(1, Math.ceil(userVal / p.limit));
     const totalCost = subs * p.price;
     const barH = Math.max(4, pct);
     const barColor = pct >= 100 ? 'var(--green)' : pct > 40 ? 'var(--orange)' : 'var(--pink)';
@@ -320,7 +335,7 @@ function renderPlans() {
     html += `<tr>
       <td style="font-weight:600;">${p.name}</td>
       <td>$${p.price}</td>
-      <td class="num">${fmtNum(p.limit)} ${p.unit}</td>
+      <td class="num">${p.limit} ${p.unit}</td>
       <td>
         <div style="display:flex;align-items:center;gap:6px;">
           <div style="flex:1;background:var(--surface2);border-radius:3px;height:8px;overflow:hidden;min-width:60px;">
