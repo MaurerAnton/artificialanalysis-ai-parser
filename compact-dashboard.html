@@ -336,10 +336,10 @@ function setStatus(type, msg) {
 }
 
 const TOP_PLANS = [
-  { name:'GitHub Copilot Pro+', price:39,  limit:1500,       unit:'prem req/mo',  priceInput:0,    priceOutput:0,    priceCached:0 },
-  { name:'Claude Max 20×',     price:200, limit:900,        unit:'msgs/5h',      priceInput:6.25, priceOutput:25.00, priceCached:0.50 },
-  { name:'Google AI Ultra',    price:250, limit:500,        unit:'msgs/day',     priceInput:3.00, priceOutput:12.00, priceCached:0.30 },
-  { name:'Cerebras Max',       price:200, limit:120000000,  unit:'tokens/day est.', priceInput:0.35, priceOutput:0.75, priceCached:0 },
+  { name:'GitHub Copilot Pro+', price:39,  limit:1500,       unit:'prem req/mo' },
+  { name:'Claude Max 20×',     price:200, limit:900,        unit:'msgs/5h' },
+  { name:'Google AI Ultra',    price:250, limit:500,        unit:'msgs/day' },
+  { name:'Cerebras Max',       price:200, limit:120000000,  unit:'tokens/day est.' },
 ];
 
 function planTotalCost(model) {
@@ -355,28 +355,12 @@ function planTotalCost(model) {
 function renderTopPlans() {
   const grid = document.getElementById('topPlans');
   if (!grid) return;
-  const dailyTok = tokenData.length ? tokenData.reduce((a,d)=>a+sumArr(d.cached)+sumArr(d.input)+sumArr(d.output),0) / tokenData.length : 0;
   grid.innerHTML = TOP_PLANS.map(p => {
-    let priceLine, limitLine, big, sub;
-    if (p.priceInput) {
-      // Per-token plan (Cerebras): calculate actual cost from user data
-      const cost = planTotalCost(p);
-      priceLine = '$'+p.priceInput.toFixed(2)+' / $'+p.priceOutput.toFixed(2);
-      limitLine = fmtNum(p.limit)+' '+p.unit;
-      big = fmtCost(cost);
-      sub = 'for ' + tokenData.length + ' days';
-    } else {
-      // Subscription plan (Copilot, Claude, Google): monthly flat fee
-      priceLine = '$'+p.price+'/mo flat';
-      limitLine = fmtNum(p.limit)+' '+p.unit;
-      big = '$'+p.price;
-      sub = 'per month';
-    }
     return `<div class="model-card">
       <div class="mc-name">${p.name}</div>
-      <div class="mc-creator">${limitLine}</div>
-      <div class="mc-row"><span class="lbl">Pricing</span><span class="val">${priceLine}</span></div>
-      <div class="mc-cost"><div class="big">${big}</div><div class="sub">${sub}</div></div>
+      <div class="mc-creator">${fmtNum(p.limit)} ${p.unit}</div>
+      <div class="mc-row"><span class="lbl">Daily limit</span><span class="val">${fmtNum(p.limit)} ${p.unit}</span></div>
+      <div class="mc-cost"><div class="big">$${p.price}</div><div class="sub">per month</div></div>
     </div>`;
   }).join('');
 }
