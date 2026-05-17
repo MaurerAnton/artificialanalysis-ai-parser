@@ -140,7 +140,7 @@
         <th>Plan</th><th>Price/mo</th><th>Est. token cap</th><th>Coverage</th><th>Subs needed</th>
       </tr></thead><tbody id="plansBody"></tbody></table>
     </div>
-    <div style="font-size:0.7rem;color:var(--text-dim);">Token caps are rough estimates based on published plan limits and typical usage patterns. Costs assume the selected model.</div>
+    <div style="font-size:0.7rem;color:var(--text-dim);">Token caps are estimates — providers define limits in messages, not tokens. Pricing from official sites (May 2026).</div>
   </div>
 
   <div style="text-align:center;padding:20px 12px;margin-top:8px;border-top:1px solid var(--surface2);font-size:0.8rem;color:var(--text-dim);">
@@ -179,15 +179,16 @@ const TOP_MODELS = [
 ];
 
 const PLANS = [
-  { name:'ChatGPT Plus',     price:20,  tokens:38_000_000 },
+  { name:'ChatGPT Plus',     price:20,  tokens:35_000_000 },
   { name:'ChatGPT Pro',      price:200, tokens:500_000_000 },
-  { name:'Claude Pro',       price:20,  tokens:20_000_000 },
+  { name:'Claude Pro',       price:20,  tokens:25_000_000 },
   { name:'Claude Max',       price:100, tokens:200_000_000 },
-  { name:'Claude Team',      price:25,  tokens:40_000_000 },
-  { name:'Gemini Advanced',  price:20,  tokens:40_000_000 },
-  { name:'Perplexity Pro',   price:20,  tokens:15_000_000 },
-  { name:'Cursor Pro',       price:20,  tokens:10_000_000 },
-  { name:'GitHub Copilot',   price:10,  tokens:8_000_000 },
+  { name:'Claude Max (20x)', price:200, tokens:500_000_000 },
+  { name:'Claude Team Std',  price:25,  tokens:40_000_000 },
+  { name:'Claude Team Prem', price:125, tokens:200_000_000 },
+  { name:'Google AI Plus',   price:8,   tokens:15_000_000 },
+  { name:'Google AI Pro',    price:27,  tokens:40_000_000 },
+  { name:'Google AI Ultra',  price:54,  tokens:200_000_000 },
   { name:'API (pay as you go)', price:null, tokens:Infinity },
 ];
 
