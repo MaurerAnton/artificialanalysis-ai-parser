@@ -137,7 +137,7 @@
     <h2>💳 How good is a subscription plan for my consumption?</h2>
     <div class="model-grid" id="topPlans"></div>
     <div style="font-size:0.72rem;color:var(--text-dim);margin-top:10px;line-height:1.5;">
-      Why not ChatGPT, Grok, or others? My typical workload involves heavy tasks with <b>1M+ token contexts</b>. ChatGPT &amp; Grok models don't handle these well. Claude handles them mediocrily. Cerebras has no models with million-token context. Copilot isn't built for this either. Google Gemini can do it — but even the $250 Ultra plan has limits too low for my needs.
+      My daily token consumption ranges from <b style="color:var(--pink);">250M to 1.5B tokens</b>. None of these plans cover that — the workloads involve heavy 1M+ token contexts, agentic loops, and multi-model orchestration that subscription plans simply weren't built for.
     </div>
   </div>
 
@@ -355,12 +355,20 @@ function planTotalCost(model) {
 function renderTopPlans() {
   const grid = document.getElementById('topPlans');
   if (!grid) return;
-  grid.innerHTML = TOP_PLANS.map(p => {
-    return `<div class="model-card">
-      <div class="mc-name">${p.name}</div>
-      <div class="mc-creator">${fmtNum(p.limit)} ${p.unit}</div>
-      <div class="mc-row"><span class="lbl">Daily limit</span><span class="val">${fmtNum(p.limit)} ${p.unit}</span></div>
-      <div class="mc-cost"><div class="big">$${p.price}</div><div class="sub">per month</div></div>
+  const dailyM = '250M–1.5B tokens/day';
+  const reasons = [
+    'Not designed for token-heavy workloads — flat subscription, no per-token scale',
+    'Message limit far too low for token-intensive 1M+ context tasks',
+    'Even at 500 prompts/day, the context window work I do needs far more',
+    '120M/day sounds like a lot — but my peak days hit 1.5B tokens'
+  ];
+  grid.innerHTML = TOP_PLANS.map((p,i) => {
+    return `<div class="model-card" style="border-color:var(--red);background:rgba(255,107,107,0.06);">
+      <div class="mc-name" style="color:var(--pink);">${p.name}</div>
+      <div class="mc-creator" style="color:var(--text-dim);">$${p.price}/mo · ${fmtNum(p.limit)} ${p.unit}</div>
+      <div class="mc-row"><span class="lbl">My daily usage</span><span class="val" style="color:var(--pink);">${dailyM}</span></div>
+      <div class="mc-row"><span class="lbl">Plan covers</span><span class="val">${fmtNum(p.limit)} ${p.unit}</span></div>
+      <div class="mc-cost" style="border-color:rgba(255,107,107,0.2);"><div class="big" style="color:var(--pink);">❌</div><div class="sub" style="color:var(--text-dim);font-size:0.72rem;line-height:1.4;">${reasons[i]}</div></div>
     </div>`;
   }).join('');
 }
