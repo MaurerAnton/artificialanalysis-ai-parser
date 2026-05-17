@@ -143,11 +143,9 @@
     <div style="font-size:0.7rem;color:var(--text-dim);margin-top:4px;">
       ★ = published limits. <a href="https://openai.com/chatgpt/pricing" style="color:var(--accent);">ChatGPT</a> ·
       <a href="https://github.com/features/copilot/plans" style="color:var(--accent);">Copilot</a> ·
-      <a href="https://x.ai/grok" style="color:var(--accent);">Grok</a> ·
       <a href="https://clickrank.ai/claude-pro-vs-max" style="color:var(--accent);">Claude</a> ·
       <a href="https://cursor.com/pricing" style="color:var(--accent);">Cursor</a> ·
       <a href="https://mistral.ai/pricing" style="color:var(--accent);">Mistral</a> ·
-      <a href="https://www.midjourney.com/home" style="color:var(--accent);">Midjourney</a> ·
       <a href="https://huggingface.co/pricing" style="color:var(--accent);">HF</a> ·
       <a href="https://openrouter.ai/pricing" style="color:var(--accent);">OpenRouter</a> ·
       <a href="https://support.google.com/gemini/answer/16275805" style="color:var(--accent);">Google limits</a> ·
@@ -202,10 +200,6 @@ const PLANS = [
   { name:'GitHub Copilot Free',price:0,    limit:50,     unit:'prem req/mo ★' },
   { name:'GitHub Copilot Pro', price:10,   limit:300,    unit:'prem req/mo ★' },
   { name:'GitHub Copilot Pro+',price:39,   limit:1500,   unit:'prem req/mo ★' },
-  // Grok (xAI) — SuperGrok $30 or $300; consumer plans tied to X Premium
-  { name:'Grok (X Premium)',   price:8,    limit:10000,  unit:'msgs/mo est.' },
-  { name:'SuperGrok',          price:30,   limit:40000,  unit:'msgs/mo est.' },
-  { name:'SuperGrok Heavy',    price:300,  limit:200000, unit:'msgs/mo est.' },
   // Claude — per clickrank.ai: ~45/225/900 msgs per 5h rolling window
   { name:'Claude Pro',         price:20,   limit:6500,   unit:'msgs/mo ★' },
   { name:'Claude Max 5×',      price:100,  limit:32000,  unit:'msgs/mo ★' },
@@ -218,12 +212,6 @@ const PLANS = [
   // Mistral — "up to 6× Free" / "up to 30× Think"
   { name:'Mistral Pro',        price:15,   limit:12000,  unit:'msgs/mo est.' },
   { name:'Mistral Team',       price:25,   limit:20000,  unit:'msgs/mo est.' },
-  // Midjourney
-  { name:'Midjourney Basic',   price:10,   limit:200,    unit:'images/mo ★' },
-  { name:'Midjourney Pro',     price:30,   limit:1000,   unit:'images/mo ★' },
-  // Google AI — Pro model limits (Thinking=1500/500 is separate Deep Think mode)
-  { name:'Google AI Pro',      price:20,   limit:3000,   unit:'prompts/mo ★' },
-  { name:'Google AI Ultra',    price:250,  limit:15000,  unit:'prompts/mo ★' },
   // API-only platforms (no subscription — pay per token)
   { name:'API (pay as you go)',price:null, limit:Infinity, unit:'' },
 ];
