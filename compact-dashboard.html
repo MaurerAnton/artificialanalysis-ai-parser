@@ -133,6 +133,16 @@
     </div>
   </div>
 
+  <div class="section">
+    <h2>💳 How good is a subscription plan for my consumption?</h2>
+    <div class="table-wrap" style="margin-bottom:8px;">
+      <table><thead><tr>
+        <th>Plan</th><th>Price/mo</th><th>Est. token cap</th><th>Your monthly use</th><th>Plan used</th><th>Savings vs API</th>
+      </tr></thead><tbody id="plansBody"></tbody></table>
+    </div>
+    <div style="font-size:0.7rem;color:var(--text-dim);">Token caps are rough estimates based on typical plan limits. API cost is calculated using the selected model's pricing.</div>
+  </div>
+
   <div style="text-align:center;padding:20px 12px;margin-top:8px;border-top:1px solid var(--surface2);font-size:0.8rem;color:var(--text-dim);">
     Want charts, model search, and date range filter? Try the <a href="dashboard.html" style="color:var(--accent);">full dashboard</a> →
   </div>
@@ -166,6 +176,14 @@ const TOP_MODELS = [
   { name:'Claude Opus 4.7 (Max)', creator:'Anthropic', priceInput:6.25, priceOutput:25.00, priceCached:0.50, iq:57.28, speed:43 },
   { name:'Gemini 3.1 Pro Preview', creator:'Google', priceInput:3.00, priceOutput:12.00, priceCached:0.30, iq:56.8, speed:121 },
   { name:'Cerebras + GLM 4.7', creator:'Cerebras / Z AI', priceInput:2.20, priceOutput:2.75, priceCached:2.20, iq:54.0, speed:1000 },
+];
+
+const PLANS = [
+  { name:'ChatGPT Plus', price:20, tokens:30_000_000 },
+  { name:'Claude Pro', price:20, tokens:30_000_000 },
+  { name:'Claude Max', price:100, tokens:200_000_000 },
+  { name:'Gemini Advanced', price:20, tokens:40_000_000 },
+  { name:'API (pay as you go)', price:null, tokens:Infinity },
 ];
 
 function sumArr(arr) { return arr.reduce((a,b)=>a+b,0); }
@@ -221,6 +239,7 @@ function pickModel(idx) {
   selectedModel = TOP_MODELS[idx];
   renderModels();
   renderTable();
+  renderPlans();
   document.getElementById('selectedLabel').textContent = '— ' + selectedModel.name;
 }
 
@@ -247,11 +266,37 @@ function renderTable() {
   adaptTable();
 }
 
+function renderPlans() {
+  const m = selectedModel || TOP_MODELS[0];
+  const totalTok = tokenData.reduce((a,d)=>a+sumArr(d.cached)+sumArr(d.input)+sumArr(d.output),0);
+  const monthlyTok = tokenData.length ? totalTok / tokenData.length * 30 : 0;
+  const apiCost = monthlyTok / 1e6 * ((m.priceInput + m.priceOutput) / 2); // rough blended
+  let html = '';
+
+  PLANS.forEach(p => {
+    const pct = p.tokens === Infinity ? 0 : Math.min(100, monthlyTok / p.tokens * 100);
+    const bar = p.tokens === Infinity ? '' : `<div style="background:var(--surface2);border-radius:3px;height:6px;margin-top:4px;overflow:hidden;"><div style="height:100%;width:${pct}%;background:${pct>90?'var(--pink)':pct>50?'var(--orange)':'var(--green)'};border-radius:3px;"></div></div>`;
+    const savings = p.price !== null ? apiCost - p.price : 0;
+    const savStr = p.price === null ? '—' : (savings > 0 ? '<span style="color:var(--green)">-$' + savings.toFixed(0) + '</span>' : '<span style="color:var(--pink)">+$' + Math.abs(savings).toFixed(0) + '</span>');
+    html += `<tr>
+      <td style="font-weight:600;">${p.name}</td>
+      <td>${p.price !== null ? '$'+p.price : '—'}</td>
+      <td class="num">${p.tokens === Infinity ? '∞' : fmtNum(p.tokens)}</td>
+      <td class="num">${fmtNum(monthlyTok)}${bar}</td>
+      <td class="num">${p.tokens === Infinity ? '—' : Math.round(pct)+'%'}</td>
+      <td>${savStr}</td>
+    </tr>`;
+  });
+
+  document.getElementById('plansBody').innerHTML = html;
+}
+
 function setDays(d) {
   displayDays = d;
   document.querySelectorAll('.days-btn').forEach(b => b.classList.toggle('active', +b.textContent.replace('d','') === d));
   renderModels();
   renderTable();
+  renderPlans();
 }
 
 function setStatus(type, msg) {
@@ -279,6 +324,7 @@ async function init() {
     document.getElementById('daySelector').style.display = 'flex';
     renderModels();
     renderTable();
+  renderPlans();
   } catch(e) { console.error(e); setStatus('err', e.message); }
 }
 
