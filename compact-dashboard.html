@@ -256,7 +256,6 @@ function pickModel(idx) {
   selectedModel = TOP_MODELS[idx];
   renderModels();
   renderTable();
-  renderPlans();
   document.getElementById('selectedLabel').textContent = '— ' + selectedModel.name;
 }
 
@@ -328,7 +327,6 @@ function setDays(d) {
   document.querySelectorAll('.days-btn').forEach(b => b.classList.toggle('active', +b.textContent.replace('d','') === d));
   renderModels();
   renderTable();
-  renderPlans();
 }
 
 function setStatus(type, msg) {
@@ -393,7 +391,6 @@ async function init() {
     document.getElementById('daySelector').style.display = 'flex';
     renderModels();
     renderTable();
-    renderPlans();
     renderTopPlans();
   } catch(e) { console.error(e); setStatus('err', e.message); }
 }
