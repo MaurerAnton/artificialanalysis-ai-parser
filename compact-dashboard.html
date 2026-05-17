@@ -122,6 +122,9 @@
       <button class="days-btn" onclick="setDays(30)">30d</button>
     </div>
     <div class="model-grid" id="topPlans"></div>
+    <div style="font-size:0.72rem;color:var(--text-dim);margin-top:10px;line-height:1.5;">
+      Why not ChatGPT, Grok, or others? My typical workload involves heavy tasks with <b>1M+ token contexts</b>. ChatGPT & Grok models don't handle these well. Claude handles them mediocrily. Cerebras has no models with million-token context. Copilot isn't built for this either. Google Gemini can do it — but even the $250 Ultra plan has limits too low for my needs.
+    </div>
   </div>
 
   <div class="section">
@@ -193,7 +196,7 @@ function reloadFromSource() {
 }
 
 const TOP_PLANS = [
-  { name:'OpenAI Pro $200',    price:200, limit:3200, unit:'msgs/3h', priceInput:5.00, priceOutput:30.00, priceCached:0.50 },
+  { name:'GitHub Copilot Pro+', price:39,  limit:1500,  unit:'prem req/mo', priceInput:0, priceOutput:0, priceCached:0 },
   { name:'Claude Max 20×',     price:200, limit:900,  unit:'msgs/5h', priceInput:6.25, priceOutput:25.00, priceCached:0.50 },
   { name:'Google AI Ultra',    price:250, limit:500,  unit:'msgs/day',priceInput:3.00, priceOutput:12.00, priceCached:0.30 },
   { name:'Cerebras Max',       price:200, limit:120000000, unit:'tokens/day est.', priceInput:0.35, priceOutput:0.75, priceCached:0 },
