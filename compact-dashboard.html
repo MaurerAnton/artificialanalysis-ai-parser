@@ -328,9 +328,10 @@ async function init() {
     document.getElementById('daySelector').classList.remove('hidden-init');
     document.getElementById('daySelector').style.display = 'flex';
     renderModels();
-    renderTable();
-  renderPlans();
   } catch(e) { console.error(e); setStatus('err', e.message); }
+  renderTable();
+  renderPlans();
+  useRealData();
 }
 
 if (dataSourceOverride) document.getElementById('dataSource').value = dataSourceOverride;
