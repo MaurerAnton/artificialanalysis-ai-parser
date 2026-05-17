@@ -144,7 +144,7 @@
       ★ = published limits. <a href="https://openai.com/chatgpt/pricing" style="color:var(--accent);">ChatGPT</a> ·
       <a href="https://github.com/features/copilot/plans" style="color:var(--accent);">Copilot</a> ·
       <a href="https://x.ai/grok" style="color:var(--accent);">Grok</a> ·
-      <a href="https://claude.com/pricing" style="color:var(--accent);">Claude</a> ·
+      <a href="https://clickrank.ai/claude-pro-vs-max" style="color:var(--accent);">Claude</a> ·
       <a href="https://cursor.com/pricing" style="color:var(--accent);">Cursor</a> ·
       <a href="https://mistral.ai/pricing" style="color:var(--accent);">Mistral</a> ·
       <a href="https://www.midjourney.com/home" style="color:var(--accent);">Midjourney</a> ·
@@ -206,12 +206,12 @@ const PLANS = [
   { name:'Grok (X Premium)',   price:8,    limit:10000,  unit:'msgs/mo est.' },
   { name:'SuperGrok',          price:30,   limit:40000,  unit:'msgs/mo est.' },
   { name:'SuperGrok Heavy',    price:300,  limit:200000, unit:'msgs/mo est.' },
-  // Claude — opaque "more/5×/20× than Pro"
-  { name:'Claude Pro',         price:20,   limit:15000,  unit:'msgs/mo est.' },
-  { name:'Claude Max',         price:100,  limit:75000,  unit:'msgs/mo est.' },
-  { name:'Claude Max 20×',     price:200,  limit:300000, unit:'msgs/mo est.' },
-  { name:'Claude Team Std',    price:25,   limit:25000,  unit:'msgs/mo est.' },
-  { name:'Claude Team Prem',   price:125,  limit:125000, unit:'msgs/mo est.' },
+  // Claude — per clickrank.ai: ~45/225/900 msgs per 5h rolling window
+  { name:'Claude Pro',         price:20,   limit:6500,   unit:'msgs/mo ★' },
+  { name:'Claude Max 5×',      price:100,  limit:32000,  unit:'msgs/mo ★' },
+  { name:'Claude Max 20×',     price:200,  limit:130000, unit:'msgs/mo ★' },
+  { name:'Claude Team Std',    price:25,   limit:10000,  unit:'msgs/mo est.' },
+  { name:'Claude Team Prem',   price:125,  limit:40000,  unit:'msgs/mo est.' },
   // Cursor — opaque "extended/limited Agent requests"
   { name:'Cursor Pro',         price:20,   limit:8000,   unit:'req/mo est.' },
   { name:'Cursor Ultra',       price:60,   limit:30000,  unit:'req/mo est.' },
