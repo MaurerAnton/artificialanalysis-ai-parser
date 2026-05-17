@@ -355,19 +355,28 @@ function planTotalCost(model) {
 function renderTopPlans() {
   const grid = document.getElementById('topPlans');
   if (!grid) return;
+  const dailyTok = tokenData.length ? tokenData.reduce((a,d)=>a+sumArr(d.cached)+sumArr(d.input)+sumArr(d.output),0) / tokenData.length : 0;
   grid.innerHTML = TOP_PLANS.map(p => {
-    const cost = planTotalCost(p);
-    let priceLine, limitLine;
-    if (p.limit === Infinity) { priceLine = 'per token'; limitLine = '∞'; }
-    else if (p.priceInput) { priceLine = '$'+p.priceInput.toFixed(2)+' / $'+p.priceOutput.toFixed(2); limitLine = fmtNum(p.limit)+' '+p.unit; }
-    else { priceLine = '$'+p.price+'/mo flat'; limitLine = fmtNum(p.limit)+' '+p.unit; }
-    const monthlyLine = p.price ? '$'+p.price+'/mo' : 'per token';
+    let priceLine, limitLine, big, sub;
+    if (p.priceInput) {
+      // Per-token plan (Cerebras): calculate actual cost from user data
+      const cost = planTotalCost(p);
+      priceLine = '$'+p.priceInput.toFixed(2)+' / $'+p.priceOutput.toFixed(2);
+      limitLine = fmtNum(p.limit)+' '+p.unit;
+      big = fmtCost(cost);
+      sub = 'for ' + tokenData.length + ' days';
+    } else {
+      // Subscription plan (Copilot, Claude, Google): monthly flat fee
+      priceLine = '$'+p.price+'/mo flat';
+      limitLine = fmtNum(p.limit)+' '+p.unit;
+      big = '$'+p.price;
+      sub = 'per month';
+    }
     return `<div class="model-card">
       <div class="mc-name">${p.name}</div>
       <div class="mc-creator">${limitLine}</div>
       <div class="mc-row"><span class="lbl">Pricing</span><span class="val">${priceLine}</span></div>
-      <div class="mc-row"><span class="lbl">Monthly cost</span><span class="val" style="color:var(--green);">${monthlyLine}</span></div>
-      <div class="mc-cost"><div class="big">${p.limit===Infinity?'per token':fmtCost(cost)}</div><div class="sub">for ${tokenData.length} days</div></div>
+      <div class="mc-cost"><div class="big">${big}</div><div class="sub">${sub}</div></div>
     </div>`;
   }).join('');
 }
