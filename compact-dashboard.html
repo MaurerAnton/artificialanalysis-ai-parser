@@ -140,7 +140,7 @@
         <th>Plan</th><th>Price/mo</th><th>Request limit</th><th>Coverage</th><th>Subs needed</th>
       </tr></thead><tbody id="plansBody"></tbody></table>
     </div>
-    <div style="font-size:0.7rem;color:var(--text-dim);">ChatGPT limits from OpenAI (160 msgs/3hr for Plus, 5×/20× for Pro). Claude &amp; Google — best-effort estimates. "msgs/mo est." = approximate.</div>
+    <div style="font-size:0.7rem;color:var(--text-dim);">★ = published limits (ChatGPT: 160 msgs/3hr, Copilot: premium req/mo). "est." = best-effort; Claude/Mistral/Cursor/Google don't publish exact numbers. Pricing from official sites (May 2026).</div>
   </div>
 
   <div style="text-align:center;padding:20px 12px;margin-top:8px;border-top:1px solid var(--surface2);font-size:0.8rem;color:var(--text-dim);">
@@ -179,22 +179,31 @@ const TOP_MODELS = [
 ];
 
 const PLANS = [
-  // ChatGPT — published limits: 160 msgs/3hr (Plus), 3000 Thinking/wk
-  { name:'ChatGPT Plus',     price:20,  limit:38400, unit:'msgs/mo' },
-  // Pro: 5× Plus, Pro $200: 20× Plus
-  { name:'ChatGPT Pro',      price:100, limit:192000, unit:'msgs/mo' },
-  { name:'ChatGPT Pro $200', price:200, limit:768000, unit:'msgs/mo' },
-  // Claude — opaque "more/5×/20× than Pro", no published numbers
-  { name:'Claude Pro',       price:20,  limit:15000, unit:'msgs/mo est.' },
-  { name:'Claude Max',       price:100, limit:75000, unit:'msgs/mo est.' },
-  { name:'Claude Max 20×',   price:200, limit:300000, unit:'msgs/mo est.' },
-  { name:'Claude Team Std',  price:25,  limit:25000, unit:'msgs/mo est.' },
-  { name:'Claude Team Prem', price:125, limit:125000, unit:'msgs/mo est.' },
+  // ChatGPT — published: 160 msgs/3hr (Plus) × 8 cycles × 30 days
+  { name:'ChatGPT Plus',         price:20,   limit:38400,  unit:'msgs/mo ★' },
+  { name:'ChatGPT Pro $100',     price:100,  limit:192000, unit:'msgs/mo ★' },
+  { name:'ChatGPT Pro $200',     price:200,  limit:768000, unit:'msgs/mo ★' },
+  // GitHub Copilot — published: premium requests/month, plus unlimited GPT-5 mini
+  { name:'GitHub Copilot Free',  price:0,    limit:50,     unit:'prem req/mo ★' },
+  { name:'GitHub Copilot Pro',   price:10,   limit:300,    unit:'prem req/mo ★' },
+  { name:'GitHub Copilot Pro+',  price:39,   limit:1500,   unit:'prem req/mo ★' },
+  // Claude — opaque "more/5×/20× than Pro"
+  { name:'Claude Pro',           price:20,   limit:15000,  unit:'msgs/mo est.' },
+  { name:'Claude Max',           price:100,  limit:75000,  unit:'msgs/mo est.' },
+  { name:'Claude Max 20×',       price:200,  limit:300000, unit:'msgs/mo est.' },
+  { name:'Claude Team Std',      price:25,   limit:25000,  unit:'msgs/mo est.' },
+  { name:'Claude Team Prem',     price:125,  limit:125000, unit:'msgs/mo est.' },
+  // Cursor — opaque "extended/limited Agent requests"
+  { name:'Cursor Pro',           price:20,   limit:8000,   unit:'req/mo est.' },
+  { name:'Cursor Ultra',         price:60,   limit:30000,  unit:'req/mo est.' },
+  // Mistral — opaque "up to 6× Free messages", "up to 30× Think mode"
+  { name:'Mistral Pro',          price:15,   limit:12000,  unit:'msgs/mo est.' },
+  { name:'Mistral Team',         price:25,   limit:20000,  unit:'msgs/mo est.' },
   // Google AI — opaque "more/higher/highest"
-  { name:'Google AI Plus',   price:8,   limit:10000, unit:'msgs/mo est.' },
-  { name:'Google AI Pro',    price:27,  limit:30000, unit:'msgs/mo est.' },
-  { name:'Google AI Ultra',  price:54,  limit:100000, unit:'msgs/mo est.' },
-  { name:'API (pay as you go)', price:null, limit:Infinity, unit:'' },
+  { name:'Google AI Plus',       price:8,    limit:10000,  unit:'msgs/mo est.' },
+  { name:'Google AI Pro',        price:27,   limit:30000,  unit:'msgs/mo est.' },
+  { name:'Google AI Ultra',      price:54,   limit:100000, unit:'msgs/mo est.' },
+  { name:'API (pay as you go)',  price:null, limit:Infinity, unit:'' },
 ];
 
 function sumArr(arr) { return arr.reduce((a,b)=>a+b,0); }
