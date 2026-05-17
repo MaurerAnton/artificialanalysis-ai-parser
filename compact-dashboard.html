@@ -149,7 +149,8 @@
       <a href="https://mistral.ai/pricing" style="color:var(--accent);">Mistral</a> ·
       <a href="https://www.midjourney.com/home" style="color:var(--accent);">Midjourney</a> ·
       <a href="https://huggingface.co/pricing" style="color:var(--accent);">HF</a> ·
-      <a href="https://openrouter.ai/pricing" style="color:var(--accent);">OpenRouter</a>.
+      <a href="https://openrouter.ai/pricing" style="color:var(--accent);">OpenRouter</a> ·
+      <a href="https://support.google.com/gemini/answer/16275805" style="color:var(--accent);">Google</a>.
       "est." = provider doesn't publish exact limits. Pricing as of May 2026.
     </div>
   </div>
@@ -219,6 +220,10 @@ const PLANS = [
   // Midjourney
   { name:'Midjourney Basic',   price:10,   limit:200,    unit:'images/mo ★' },
   { name:'Midjourney Pro',     price:30,   limit:1000,   unit:'images/mo ★' },
+  // Google AI — confirmed limits from support.google.com/gemini/answer/16275805
+  { name:'Google AI Plus',     price:8,    limit:2700,   unit:'prompts/mo ★' },
+  { name:'Google AI Pro',      price:27,   limit:9000,   unit:'prompts/mo ★' },
+  { name:'Google AI Ultra',    price:54,   limit:45000,  unit:'prompts/mo ★' },
   // API-only platforms (no subscription — pay per token)
   { name:'API (pay as you go)',price:null, limit:Infinity, unit:'' },
 ];
