@@ -355,20 +355,10 @@ function planTotalCost(model) {
 function renderTopPlans() {
   const grid = document.getElementById('topPlans');
   if (!grid) return;
-  const limits = [
-    { cap:'1,500 requests/month' },
-    { cap:'900 messages / 5 hours' },
-    { cap:'500 prompts / day' },
-    { cap:'120M tokens / day' },
-  ];
-  grid.innerHTML = TOP_PLANS.map((p,i) => {
+  grid.innerHTML = TOP_PLANS.map(p => {
     return `<div class="model-card" style="border-color:var(--red);background:rgba(255,107,107,0.06);">
-      <div class="mc-name" style="color:var(--pink);">${p.name} — $${p.price}/mo</div>
-      <div class="mc-creator" style="color:var(--text-dim);">Limit: ${limits[i].cap}</div>
-      <div class="mc-cost" style="border-color:rgba(255,107,107,0.2);padding-top:12px;margin-top:8px;">
-        <div class="big" style="color:var(--pink);font-size:1.1rem;">Does not fit</div>
-        <div class="sub" style="color:var(--text-dim);font-size:0.7rem;">Limit irrelevant at 250M–1.5B tokens/day</div>
-      </div>
+      <div class="mc-name" style="color:var(--pink);">${p.name}</div>
+      <div class="mc-creator" style="color:var(--text-dim);">$${p.price}/mo · ${fmtNum(p.limit)} ${p.unit}</div>
     </div>`;
   }).join('');
 }
