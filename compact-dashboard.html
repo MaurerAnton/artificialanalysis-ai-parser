@@ -355,10 +355,17 @@ function planTotalCost(model) {
 function renderTopPlans() {
   const grid = document.getElementById('topPlans');
   if (!grid) return;
-  grid.innerHTML = TOP_PLANS.map(p => {
+  const notes = [
+    'I do 1,500 requests in a single session — not a month',
+    'One prompt at 1M context eats through this instantly',
+    'I exhaust 500 prompts before lunch on a slow day',
+    'My peak days reach 1.5B — over 10× this cap'
+  ];
+  grid.innerHTML = TOP_PLANS.map((p,i) => {
     return `<div class="model-card" style="border-color:var(--red);background:rgba(255,107,107,0.06);">
       <div class="mc-name" style="color:var(--pink);">${p.name}</div>
       <div class="mc-creator" style="color:var(--text-dim);">$${p.price}/mo · ${fmtNum(p.limit)} ${p.unit}</div>
+      <div style="font-size:0.7rem;color:var(--text-dim);margin-top:6px;line-height:1.4;">${notes[i]}</div>
     </div>`;
   }).join('');
 }
