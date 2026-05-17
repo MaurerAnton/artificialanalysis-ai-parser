@@ -137,10 +137,10 @@
     <h2>💳 How good is a subscription plan for my consumption?</h2>
     <div class="table-wrap" style="margin-bottom:8px;">
       <table><thead><tr>
-        <th>Plan</th><th>Price/mo</th><th>Est. token cap</th><th>Coverage</th><th>Subs needed</th>
+        <th>Plan</th><th>Price/mo</th><th>Request limit</th><th>Coverage</th><th>Subs needed</th>
       </tr></thead><tbody id="plansBody"></tbody></table>
     </div>
-    <div style="font-size:0.7rem;color:var(--text-dim);">Token caps are estimates: ChatGPT based on published msg limits (160/3hr), Claude &amp; Google opaque — "more/5×/20×" tiers. Pricing from official sites (May 2026).</div>
+    <div style="font-size:0.7rem;color:var(--text-dim);">ChatGPT limits from OpenAI (160 msgs/3hr for Plus, 5×/20× for Pro). Claude &amp; Google — best-effort estimates. "msgs/mo est." = approximate.</div>
   </div>
 
   <div style="text-align:center;padding:20px 12px;margin-top:8px;border-top:1px solid var(--surface2);font-size:0.8rem;color:var(--text-dim);">
@@ -179,22 +179,22 @@ const TOP_MODELS = [
 ];
 
 const PLANS = [
-  // ChatGPT — 160 msgs/3hr (Plus), msg ≈ 2K tokens → ~2.5M tok/day ≈ 75M/mo
-  { name:'ChatGPT Plus',     price:20,  tokens:75_000_000 },
-  // Pro $100: 5× Plus → ~375M/mo; Pro $200: 20× → ~1.5B/mo
-  { name:'ChatGPT Pro',      price:100, tokens:375_000_000 },
-  { name:'ChatGPT Pro $200', price:200, tokens:1_500_000_000 },
-  // Claude — opaque "more/5×/20× more than Pro", ~25M base estimate
-  { name:'Claude Pro',       price:20,  tokens:25_000_000 },
-  { name:'Claude Max',       price:100, tokens:125_000_000 },
-  { name:'Claude Max 20×',   price:200, tokens:500_000_000 },
-  { name:'Claude Team Std',  price:25,  tokens:40_000_000 },
-  { name:'Claude Team Prem', price:125, tokens:200_000_000 },
-  // Google AI — also opaque, Pro ≈ 2–3× Plus based on feature access
-  { name:'Google AI Plus',   price:8,   tokens:20_000_000 },
-  { name:'Google AI Pro',    price:27,  tokens:50_000_000 },
-  { name:'Google AI Ultra',  price:54,  tokens:200_000_000 },
-  { name:'API (pay as you go)', price:null, tokens:Infinity },
+  // ChatGPT — published limits: 160 msgs/3hr (Plus), 3000 Thinking/wk
+  { name:'ChatGPT Plus',     price:20,  limit:38400, unit:'msgs/mo' },
+  // Pro: 5× Plus, Pro $200: 20× Plus
+  { name:'ChatGPT Pro',      price:100, limit:192000, unit:'msgs/mo' },
+  { name:'ChatGPT Pro $200', price:200, limit:768000, unit:'msgs/mo' },
+  // Claude — opaque "more/5×/20× than Pro", no published numbers
+  { name:'Claude Pro',       price:20,  limit:15000, unit:'msgs/mo est.' },
+  { name:'Claude Max',       price:100, limit:75000, unit:'msgs/mo est.' },
+  { name:'Claude Max 20×',   price:200, limit:300000, unit:'msgs/mo est.' },
+  { name:'Claude Team Std',  price:25,  limit:25000, unit:'msgs/mo est.' },
+  { name:'Claude Team Prem', price:125, limit:125000, unit:'msgs/mo est.' },
+  // Google AI — opaque "more/higher/highest"
+  { name:'Google AI Plus',   price:8,   limit:10000, unit:'msgs/mo est.' },
+  { name:'Google AI Pro',    price:27,  limit:30000, unit:'msgs/mo est.' },
+  { name:'Google AI Ultra',  price:54,  limit:100000, unit:'msgs/mo est.' },
+  { name:'API (pay as you go)', price:null, limit:Infinity, unit:'' },
 ];
 
 function sumArr(arr) { return arr.reduce((a,b)=>a+b,0); }
@@ -278,12 +278,12 @@ function renderTable() {
 }
 
 function renderPlans() {
-  const totalTok = tokenData.reduce((a,d)=>a+sumArr(d.cached)+sumArr(d.input)+sumArr(d.output),0);
-  const monthlyTok = tokenData.length ? totalTok / tokenData.length * 30 : 0;
+  const totalPrompts = tokenData.reduce((a,d)=>a+sumArr(d.prompts),0);
+  const monthlyPrompts = tokenData.length ? totalPrompts / tokenData.length * 30 : 0;
   let html = '';
 
   PLANS.forEach(p => {
-    if (p.tokens === Infinity) {
+    if (p.limit === Infinity) {
       html += `<tr>
         <td style="font-weight:600;">${p.name}</td>
         <td>—</td><td class="num">∞</td>
@@ -292,8 +292,8 @@ function renderPlans() {
       return;
     }
 
-    const pct = Math.min(100, monthlyTok / p.tokens * 100);
-    const subs = Math.max(1, Math.ceil(monthlyTok / p.tokens));
+    const pct = Math.min(100, monthlyPrompts / p.limit * 100);
+    const subs = Math.max(1, Math.ceil(monthlyPrompts / p.limit));
     const totalCost = subs * p.price;
     const barH = Math.max(4, pct);
     const barColor = pct > 95 ? 'var(--pink)' : pct > 60 ? 'var(--orange)' : 'var(--green)';
@@ -301,7 +301,7 @@ function renderPlans() {
     html += `<tr>
       <td style="font-weight:600;">${p.name}</td>
       <td>$${p.price}</td>
-      <td class="num">${fmtNum(p.tokens)}</td>
+      <td class="num">${fmtNum(p.limit)} ${p.unit}</td>
       <td>
         <div style="display:flex;align-items:center;gap:6px;">
           <div style="flex:1;background:var(--surface2);border-radius:3px;height:8px;overflow:hidden;min-width:60px;">
