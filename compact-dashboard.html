@@ -357,10 +357,10 @@ function renderTopPlans() {
   if (!grid) return;
   const dailyM = '250M–1.5B tokens/day';
   const reasons = [
-    'Fixed monthly fee covers coding assistance — best for IDE workflows, not raw token generation',
-    'Generous message cap for conversational AI, but 1M+ context work needs different economics',
-    'Highest prompt limits among consumer plans, though my workload exceeds it significantly',
-    '120M tokens/day at $200/mo is competitive — just not at my 250M–1.5B daily scale'
+    'Designed for IDE coding — useless for raw LLM token generation at scale',
+    'Message limits irrelevant when each prompt processes millions of tokens',
+    '500 prompts/day is nothing for workloads that routinely hit 250M+ daily tokens',
+    '120M tokens/day cap is inadequate — real consumption exceeds it by an order of magnitude'
   ];
   grid.innerHTML = TOP_PLANS.map((p,i) => {
     return `<div class="model-card" style="border-color:var(--red);background:rgba(255,107,107,0.06);">
