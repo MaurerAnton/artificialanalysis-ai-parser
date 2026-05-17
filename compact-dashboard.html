@@ -115,29 +115,6 @@
     <h2>🤖 What would I pay providers if I used their capacity for my needs?
       <span class="status" id="status"></span>
     </h2>
-    <div id="daySelector" class="hidden-init" style="margin-bottom:14px;font-size:0.8rem;color:var(--text-dim);align-items:center;gap:8px;">
-      Select days:
-      <button class="days-btn active" onclick="setDays(1)">1d</button>
-      <button class="days-btn" onclick="setDays(7)">7d</button>
-      <button class="days-btn" onclick="setDays(30)">30d</button>
-    </div>
-    <div class="model-grid" id="topPlans"></div>
-    <div style="font-size:0.72rem;color:var(--text-dim);margin-top:10px;line-height:1.5;">
-      Why not ChatGPT, Grok, or others? My typical workload involves heavy tasks with <b>1M+ token contexts</b>. ChatGPT & Grok models don't handle these well. Claude handles them mediocrily. Cerebras has no models with million-token context. Copilot isn't built for this either. Google Gemini can do it — but even the $250 Ultra plan has limits too low for my needs.
-    </div>
-  </div>
-
-  <div class="section">
-    <h2>📋 Daily Breakdown <span style="font-size:0.7rem;color:var(--text-dim);font-weight:400;" id="selectedLabel"></span></h2>
-    <div class="table-wrap">
-      <table><thead><tr>
-        <th>Date</th><th>Prompts</th><th>Cached</th><th>Input</th><th>Output</th><th>Daily Cost</th>
-      </tr></thead><tbody id="tableBody"></tbody></table>
-    </div>
-  </div>
-
-  <div class="section">
-    <h2>💳 How good is a subscription plan for my consumption?</h2>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:0.78rem;color:var(--text-dim);flex-wrap:wrap;">
       <span>Which plan covers</span>
       <input type="number" id="whatifReq" value="3600" min="1" oninput="renderPlans()"
@@ -164,6 +141,29 @@
       <a href="https://support.google.com/gemini/answer/16275805" style="color:var(--accent);">Google limits</a> ·
       <a href="https://mashable.com/article/google-gemini-daily-prompt-limit-upgrade-how-it-works" style="color:var(--accent);">Google price</a>.
       "est." = provider doesn't publish exact limits. Pricing as of May 2026.
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>📋 Daily Breakdown <span style="font-size:0.7rem;color:var(--text-dim);font-weight:400;" id="selectedLabel"></span></h2>
+    <div class="table-wrap">
+      <table><thead><tr>
+        <th>Date</th><th>Prompts</th><th>Cached</th><th>Input</th><th>Output</th><th>Daily Cost</th>
+      </tr></thead><tbody id="tableBody"></tbody></table>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>💳 How good is a subscription plan for my consumption?</h2>
+    <div id="daySelector" class="hidden-init" style="margin-bottom:14px;font-size:0.8rem;color:var(--text-dim);align-items:center;gap:8px;">
+      Select days:
+      <button class="days-btn active" onclick="setDays(1)">1d</button>
+      <button class="days-btn" onclick="setDays(7)">7d</button>
+      <button class="days-btn" onclick="setDays(30)">30d</button>
+    </div>
+    <div class="model-grid" id="topPlans"></div>
+    <div style="font-size:0.72rem;color:var(--text-dim);margin-top:10px;line-height:1.5;">
+      Why not ChatGPT, Grok, or others? My typical workload involves heavy tasks with <b>1M+ token contexts</b>. ChatGPT &amp; Grok models don't handle these well. Claude handles them mediocrily. Cerebras has no models with million-token context. Copilot isn't built for this either. Google Gemini can do it — but even the $250 Ultra plan has limits too low for my needs.
     </div>
   </div>
 
@@ -265,12 +265,12 @@ function renderTopPlans() {
   grid.innerHTML = TOP_PLANS.map((p,i) => {
     const cost = planTotalCost(p);
     const sel = selectedModel && selectedModel.name === p.name;
+    const priceLine = p.priceInput ? `$${p.priceInput.toFixed(2)} / $${p.priceOutput.toFixed(2)}` : `$${p.price}/mo flat`;
     return `<div class="model-card${sel?' selected':''}" onclick="pickPlan(${i})">
       <div class="mc-name">${p.name}</div>
       <div class="mc-creator">${fmtNum(p.limit)} ${p.unit}</div>
-      <div class="mc-row"><span class="lbl">Input $/1M</span><span class="val">$${p.priceInput.toFixed(2)}</span></div>
-      <div class="mc-row"><span class="lbl">Output $/1M</span><span class="val">$${p.priceOutput.toFixed(2)}</span></div>
-      <div class="mc-row"><span class="lbl">Cached $/1M</span><span class="val">$${(p.priceCached||p.priceInput*0.08).toFixed(2)}</span></div>
+      <div class="mc-row"><span class="lbl">Pricing</span><span class="val">${priceLine}</span></div>
+      <div class="mc-row"><span class="lbl">Monthly cost</span><span class="val" style="color:var(--green);">$${p.price}/mo</span></div>
       <div class="mc-cost"><div class="big">${fmtCost(cost)}</div><div class="sub">for ${tokenData.length} days</div></div>
     </div>`;
   }).join('');
