@@ -320,11 +320,11 @@ function renderPlans() {
       return;
     }
 
-    const pct = Math.min(100, monthlyPrompts / p.limit * 100);
+    const pct = Math.min(100, p.limit / monthlyPrompts * 100);
     const subs = Math.max(1, Math.ceil(monthlyPrompts / p.limit));
     const totalCost = subs * p.price;
     const barH = Math.max(4, pct);
-    const barColor = pct > 95 ? 'var(--pink)' : pct > 60 ? 'var(--orange)' : 'var(--green)';
+    const barColor = pct >= 100 ? 'var(--green)' : pct > 40 ? 'var(--orange)' : 'var(--pink)';
 
     html += `<tr>
       <td style="font-weight:600;">${p.name}</td>
