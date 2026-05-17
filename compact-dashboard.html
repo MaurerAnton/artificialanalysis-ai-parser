@@ -121,7 +121,7 @@
       <button class="days-btn" onclick="setDays(7)">7d</button>
       <button class="days-btn" onclick="setDays(30)">30d</button>
     </div>
-    <div class="model-grid" id="modelGrid"></div>
+    <div class="model-grid" id="topPlans"></div>
   </div>
 
   <div class="section">
@@ -192,11 +192,11 @@ function reloadFromSource() {
   location.reload();
 }
 
-const TOP_MODELS = [
-  { name:'GPT-5.5 (xhigh)', creator:'OpenAI', priceInput:5.00, priceOutput:30.00, priceCached:0.50, iq:60.24, speed:57 },
-  { name:'Claude Opus 4.7 (Max)', creator:'Anthropic', priceInput:6.25, priceOutput:25.00, priceCached:0.50, iq:57.28, speed:43 },
-  { name:'Gemini 3.1 Pro Preview', creator:'Google', priceInput:3.00, priceOutput:12.00, priceCached:0.30, iq:56.8, speed:121 },
-  { name:'Cerebras + GLM 4.7', creator:'Cerebras / Z AI', priceInput:2.20, priceOutput:2.75, priceCached:2.20, iq:54.0, speed:1000 },
+const TOP_PLANS = [
+  { name:'OpenAI Pro $200',    price:200, limit:3200, unit:'msgs/3h', priceInput:5.00, priceOutput:30.00, priceCached:0.50 },
+  { name:'Claude Max 20×',     price:200, limit:900,  unit:'msgs/5h', priceInput:6.25, priceOutput:25.00, priceCached:0.50 },
+  { name:'Google AI Ultra',    price:250, limit:500,  unit:'msgs/day',priceInput:3.00, priceOutput:12.00, priceCached:0.30 },
+  { name:'Cerebras Max',       price:200, limit:120000000, unit:'tokens/day est.', priceInput:0.35, priceOutput:0.75, priceCached:0 },
 ];
 
 const PLANS = [
@@ -251,39 +251,31 @@ function calcCost(model, day) {
   return { cached:c/1e6*pc, input:i/1e6*model.priceInput, output:o/1e6*model.priceOutput };
 }
 
-function totalCost(model, days) {
-  days = days || displayDays;
-  const avail = tokenData.length;
-  const useData = days <= avail ? tokenData.slice(0, days) : tokenData;
-  let tc=0,ti=0,to=0;
-  useData.forEach(d => { const c=calcCost(model,d); tc+=c.cached; ti+=c.input; to+=c.output; });
-  const subtotal = tc+ti+to;
-  return days > avail ? subtotal * (days / avail) : subtotal;
+function planTotalCost(model) {
+  let total = 0;
+  tokenData.forEach(d => { const c = calcCost(model,d); total += c.cached + c.input + c.output; });
+  return total;
 }
 
-function renderModels() {
-  const grid = document.getElementById('modelGrid');
-  grid.innerHTML = TOP_MODELS.map((m,i) => {
-    const cost = totalCost(m);
-    const showVal = displayDays === 1 ? totalCost(m, 1) : cost;
-    const sub = displayDays === 1 ? 'each day!' : 'for ' + displayDays + ' days';
-    const sel = selectedModel && selectedModel.name === m.name;
-    return `<div class="model-card${sel?' selected':''}" onclick="pickModel(${i})">
-      <div class="mc-name">${m.name}</div>
-      <div class="mc-creator">${m.creator}</div>
-      <div class="mc-row"><span class="lbl">Intelligence</span><span class="val" style="color:var(--accent)">${m.iq.toFixed(1)}</span></div>
-      <div class="mc-row"><span class="lbl">Input $/1M</span><span class="val">$${m.priceInput.toFixed(2)}</span></div>
-      <div class="mc-row"><span class="lbl">Output $/1M</span><span class="val">$${m.priceOutput.toFixed(2)}</span></div>
-      <div class="mc-row"><span class="lbl">Cached $/1M</span><span class="val">$${(m.priceCached||m.priceInput*0.08).toFixed(2)}</span></div>
-      <div class="mc-row"><span class="lbl">Speed</span><span class="val" style="color:var(--orange)">${m.speed} tok/s</span></div>
-      <div class="mc-cost"><div class="big">${fmtCost(showVal)}</div><div class="sub">${sub}</div></div>
+function renderTopPlans() {
+  const grid = document.getElementById('topPlans');
+  grid.innerHTML = TOP_PLANS.map((p,i) => {
+    const cost = planTotalCost(p);
+    const sel = selectedModel && selectedModel.name === p.name;
+    return `<div class="model-card${sel?' selected':''}" onclick="pickPlan(${i})">
+      <div class="mc-name">${p.name}</div>
+      <div class="mc-creator">${fmtNum(p.limit)} ${p.unit}</div>
+      <div class="mc-row"><span class="lbl">Input $/1M</span><span class="val">$${p.priceInput.toFixed(2)}</span></div>
+      <div class="mc-row"><span class="lbl">Output $/1M</span><span class="val">$${p.priceOutput.toFixed(2)}</span></div>
+      <div class="mc-row"><span class="lbl">Cached $/1M</span><span class="val">$${(p.priceCached||p.priceInput*0.08).toFixed(2)}</span></div>
+      <div class="mc-cost"><div class="big">${fmtCost(cost)}</div><div class="sub">for ${tokenData.length} days</div></div>
     </div>`;
   }).join('');
 }
 
-function pickModel(idx) {
-  selectedModel = TOP_MODELS[idx];
-  renderModels();
+function pickPlan(idx) {
+  selectedModel = TOP_PLANS[idx];
+  renderTopPlans();
   renderTable();
   renderPlans();
   document.getElementById('selectedLabel').textContent = '— ' + selectedModel.name;
@@ -299,14 +291,14 @@ function adaptTable() {
 window.addEventListener('resize', adaptTable);
 
 function renderTable() {
-  const m = selectedModel || TOP_MODELS[0];
+  const m = selectedModel || TOP_PLANS[0];
   let tc=0,ti=0,to=0,tp=0,html='';
   tokenData.forEach(d => {
     const c=calcCost(m,d), p=sumArr(d.prompts);
     tc+=sumArr(d.cached); ti+=sumArr(d.input); to+=sumArr(d.output); tp+=p;
     html+=`<tr><td class="date-cell" data-label="Date">${d.date}</td><td class="num" data-label="Prompts">${p}</td><td class="num" data-label="Cached">${fmtNum(sumArr(d.cached))}</td><td class="num" data-label="Input">${fmtNum(sumArr(d.input))}</td><td class="num" data-label="Output">${fmtNum(sumArr(d.output))}</td><td class="cost-val" data-label="Cost">${fmtCost(c.cached+c.input+c.output)}</td></tr>`;
   });
-  const gt = totalCost(m, tokenData.length);
+  const gt = planTotalCost(m);
   html+=`<tr class="sum-row"><td data-label="Date">TOTAL</td><td class="num" data-label="Prompts">${tp}</td><td class="num" data-label="Cached">${fmtNum(tc)}</td><td class="num" data-label="Input">${fmtNum(ti)}</td><td class="num" data-label="Output">${fmtNum(to)}</td><td class="cost-val" data-label="Cost">${fmtCost(gt)}</td></tr>`;
   document.getElementById('tableBody').innerHTML = html;
   adaptTable();
@@ -374,7 +366,7 @@ function useRealData() {
 function setDays(d) {
   displayDays = d;
   document.querySelectorAll('.days-btn').forEach(b => b.classList.toggle('active', +b.textContent.replace('d','') === d));
-  renderModels();
+  renderTopPlans();
   renderTable();
   renderPlans();
 }
@@ -399,10 +391,10 @@ async function init() {
     if (!Array.isArray(tokenData)) throw new Error('Expected array');
     document.getElementById('dateRange').textContent = tokenData[0].date + ' – ' + tokenData[tokenData.length-1].date;
     setStatus('ok', '');
-    selectedModel = TOP_MODELS[0];
+    selectedModel = TOP_PLANS[0];
     document.getElementById('daySelector').classList.remove('hidden-init');
     document.getElementById('daySelector').style.display = 'flex';
-    renderModels();
+    renderTopPlans();
   } catch(e) { console.error(e); setStatus('err', e.message); }
   renderTable();
   renderPlans();
