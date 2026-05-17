@@ -200,6 +200,7 @@ const TOP_PLANS = [
   { name:'Claude Max 20×',     price:200, limit:900,  unit:'msgs/5h', priceInput:6.25, priceOutput:25.00, priceCached:0.50 },
   { name:'Google AI Ultra',    price:250, limit:500,  unit:'msgs/day',priceInput:3.00, priceOutput:12.00, priceCached:0.30 },
   { name:'Cerebras Max',       price:200, limit:120000000, unit:'tokens/day est.', priceInput:0.35, priceOutput:0.75, priceCached:0 },
+  { name:'API (pay as you go)',price:0,   limit:Infinity, unit:'', priceInput:0, priceOutput:0, priceCached:0 },
 ];
 
 const PLANS = [
@@ -265,13 +266,24 @@ function renderTopPlans() {
   grid.innerHTML = TOP_PLANS.map((p,i) => {
     const cost = planTotalCost(p);
     const sel = selectedModel && selectedModel.name === p.name;
-    const priceLine = p.priceInput ? `$${p.priceInput.toFixed(2)} / $${p.priceOutput.toFixed(2)}` : `$${p.price}/mo flat`;
+    let priceLine, limitLine;
+    if (p.limit === Infinity) {
+      priceLine = 'per token';
+      limitLine = '∞';
+    } else if (p.priceInput) {
+      priceLine = `$${p.priceInput.toFixed(2)} / $${p.priceOutput.toFixed(2)}`;
+      limitLine = fmtNum(p.limit) + ' ' + p.unit;
+    } else {
+      priceLine = `$${p.price}/mo flat`;
+      limitLine = fmtNum(p.limit) + ' ' + p.unit;
+    }
+    const monthlyLine = p.price ? `$${p.price}/mo` : 'per token';
     return `<div class="model-card${sel?' selected':''}" onclick="pickPlan(${i})">
       <div class="mc-name">${p.name}</div>
-      <div class="mc-creator">${fmtNum(p.limit)} ${p.unit}</div>
+      <div class="mc-creator">${limitLine}</div>
       <div class="mc-row"><span class="lbl">Pricing</span><span class="val">${priceLine}</span></div>
-      <div class="mc-row"><span class="lbl">Monthly cost</span><span class="val" style="color:var(--green);">$${p.price}/mo</span></div>
-      <div class="mc-cost"><div class="big">${fmtCost(cost)}</div><div class="sub">for ${tokenData.length} days</div></div>
+      <div class="mc-row"><span class="lbl">Monthly cost</span><span class="val" style="color:var(--green);">${monthlyLine}</span></div>
+      <div class="mc-cost"><div class="big">${p.limit===Infinity ? 'per token' : fmtCost(cost)}</div><div class="sub">for ${tokenData.length} days</div></div>
     </div>`;
   }).join('');
 }
