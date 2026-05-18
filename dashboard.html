@@ -454,6 +454,23 @@
     </div>
   </div>
 
+  <!-- SUBSCRIPTION ANALYSIS -->
+  <div class="section">
+    <h2><span class="icon">💳</span> Subscription Plan Analysis</h2>
+    <p style="font-size:0.75rem;color:var(--text-dim);margin-bottom:12px;">Detailed comparison against your daily usage. Shows how productive your day can be within each plan's limits.</p>
+    <div class="table-section" style="overflow-x:auto;">
+      <table id="plansTable">
+        <thead><tr>
+          <th>Plan</th><th>Price/mo</th><th>Limit</th><th>Your daily avg</th><th>Used</th><th>Max you can do/day</th><th>Verdict</th>
+        </tr></thead>
+        <tbody id="plansTableBody"></tbody>
+      </table>
+    </div>
+    <div style="font-size:0.7rem;color:var(--text-dim);margin-top:4px;">
+      ★ = published limits. Plans that appear to fit on paper — ignoring context window &amp; real-world constraints.
+    </div>
+  </div>
+
   <!-- EDITOR -->
   <div class="section">
     <h2><span class="icon">✏️</span> Edit Token Counts (Inline)</h2>
@@ -608,6 +625,7 @@ async function loadModels() {
     renderEditor();
     initCalendar();
     renderAll();
+    renderPlansAnalysis();
 
     const json = await modelsResp.json();
     if (!Array.isArray(json)) throw new Error('models.json: expected array');
@@ -903,6 +921,76 @@ function togglePriceConfig() {
 }
 
 document.addEventListener('click', e => { if (!document.getElementById('modelSelectWrap').contains(e.target)) closeDropdown(); });
+
+// ═══════════════════════════════════════════════════
+//  SUBSCRIPTION ANALYSIS
+// ═══════════════════════════════════════════════════
+const PLANS = [
+  { name:'ChatGPT Free',       price:0,    limit:10,     unit:'msgs/5h',    rate:2 },
+  { name:'ChatGPT Go',         price:8,    limit:100,    unit:'msgs/5h',    rate:20 },
+  { name:'ChatGPT Plus',       price:20,   limit:160,    unit:'msgs/3h',    rate:53 },
+  { name:'ChatGPT Pro $100',   price:100,  limit:800,    unit:'msgs/3h',    rate:267 },
+  { name:'ChatGPT Pro $200',   price:200,  limit:3200,   unit:'msgs/3h',    rate:1067 },
+  { name:'Copilot Free',       price:0,    limit:50,     unit:'req/mo',     rate:1.7 },
+  { name:'Copilot Pro',        price:10,   limit:300,    unit:'req/mo',     rate:10 },
+  { name:'Copilot Pro+',       price:39,   limit:1500,   unit:'req/mo',     rate:50 },
+  { name:'Claude Pro',         price:20,   limit:45,     unit:'msgs/5h',    rate:9 },
+  { name:'Claude Max 5×',      price:100,  limit:225,    unit:'msgs/5h',    rate:45 },
+  { name:'Claude Max 20×',     price:200,  limit:900,    unit:'msgs/5h',    rate:180 },
+  { name:'Claude Team Std',    price:25,   limit:60,     unit:'msgs/5h',    rate:12 },
+  { name:'Claude Team Prem',   price:125,  limit:250,    unit:'msgs/5h',    rate:50 },
+  { name:'Cursor Pro',         price:20,   limit:250,    unit:'req/day',    rate:250 },
+  { name:'Cursor Ultra',       price:60,   limit:1000,   unit:'req/day',    rate:1000 },
+  { name:'Mistral Pro',        price:15,   limit:400,    unit:'msgs/day',   rate:400 },
+  { name:'Mistral Team',       price:25,   limit:700,    unit:'msgs/day',   rate:700 },
+  { name:'Google AI Pro',      price:20,   limit:100,    unit:'msgs/day',   rate:100 },
+  { name:'Google AI Ultra',    price:250,  limit:500,    unit:'msgs/day',   rate:500 },
+  { name:'HuggingFace PRO',    price:9,    limit:20000,  unit:'credits/mo', rate:667 },
+  { name:'OpenRouter Free',    price:0,    limit:50,     unit:'reqs/day',   rate:50 },
+];
+
+function renderPlansAnalysis() {
+  const totalPrompts = dataFiltered.reduce((a,d)=>a+sumArr(d.prompts),0);
+  const dailyAvg = dataFiltered.length ? totalPrompts / dataFiltered.length : 0;
+  let html = '';
+
+  PLANS.forEach(p => {
+    let used, maxDay, verdict, color;
+
+    // Normalize: how many user prompts per plan's time unit
+    let perWindow;
+    if (p.unit.includes('/mo'))      perWindow = dailyAvg * 30;
+    else if (p.unit.includes('/day')) perWindow = dailyAvg;
+    else if (p.unit.includes('/5h'))  perWindow = dailyAvg / 4.8;
+    else if (p.unit.includes('/3h'))  perWindow = dailyAvg / 8;
+    else                              perWindow = dailyAvg * 30;
+
+    used = Math.round(perWindow / p.limit * 100);
+
+    // Max you can do per day within this plan's limit
+    if (p.unit.includes('/mo'))      maxDay = Math.round(p.limit / 30);
+    else if (p.unit.includes('/day')) maxDay = p.limit;
+    else if (p.unit.includes('/5h'))  maxDay = Math.round(p.limit * 4.8);
+    else if (p.unit.includes('/3h'))  maxDay = Math.round(p.limit * 8);
+    else                              maxDay = Math.round(p.limit / 30);
+
+    if (used <= 80) { verdict = 'Plenty of room'; color = 'var(--green)'; }
+    else if (used <= 100) { verdict = 'Tight fit'; color = 'var(--orange)'; }
+    else { verdict = 'Over limit'; color = 'var(--pink)'; }
+
+    html += `<tr>
+      <td style="font-weight:600;">${p.name}</td>
+      <td>$${p.price}</td>
+      <td>${p.limit} ${p.unit}</td>
+      <td class="num">${Math.round(dailyAvg)}/day</td>
+      <td style="color:${color};font-weight:600;">${used}%</td>
+      <td class="num">${maxDay}/day</td>
+      <td style="color:${color};font-size:0.8rem;">${verdict}</td>
+    </tr>`;
+  });
+
+  document.getElementById('plansTableBody').innerHTML = html;
+}
 
 // ═══════════════════════════════════════════════════
 //  INIT
